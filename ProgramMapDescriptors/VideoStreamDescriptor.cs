@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MPEG.PSI
+﻿namespace MPEG.PSI
 {
     public class VideoStreamDescriptor : Descriptor
     {
@@ -93,7 +89,7 @@ namespace MPEG.PSI
         {
             get 
             {
-                if (mpeg1OnlyFlag)
+                if (Mpeg1OnlyFlag)
                     return 1;
                 return 3;
             }
@@ -103,7 +99,7 @@ namespace MPEG.PSI
         /// ISO13818-1 2.6.3 multiple_frame_rate_flag
         /// set to true to signify multiple frame rates may be present in the video stream
         /// </summary>
-        public bool multipleFrameRateFlag = false;
+        public bool MultipleFrameRateFlag { get; set; } = false;
 
         /// <summary>
         /// ISO13818-1 2.6.3 frame_rate_code
@@ -111,47 +107,47 @@ namespace MPEG.PSI
         /// The integer value of the enum can be cross referenced to a double via the
         /// FrameRates member enum.
         /// </summary>
-        public FrameRateCodes frameRateCode = FrameRateCodes.Forbidden;
+        public FrameRateCodes FrameRateCode { get; set; } = FrameRateCodes.Forbidden;
 
         /// <summary>
         /// ISO13818-1 2.6.3 MPEG_1_only_flag
         /// Set to true when the video stream contains only ISO/IEC11172-2 data
         /// </summary>
-        public bool mpeg1OnlyFlag = false;
+        public bool Mpeg1OnlyFlag { get; set; } = false;
 
         /// <summary>
         /// ISO13818-1 2.6.3 constrained_parameter_flag
         /// When mpeg1OnlyFlag is true, a true value specifies the video stream will not contain
         /// unconstrained ISO-IEC 11172-2 data. When mpeg1OnlyFlag is set to false, this field must be true.
         /// </summary>
-        public bool constrainedParameterFlag = true;
+        public bool ConstrainedParameterFlag { get; set; } = true;
 
         /// <summary>
         /// ISO13818-1 2.6.3 still_picture_flag
         /// When true specifies the video stream contains only still pictures.
         /// </summary>
-        public bool stillPictureFlag = false;
+        public bool StillPictureFlag { get; set; } = false;
 
         /// <summary>
         /// ISO13818-1 2.6.3 profile_and_level_indication
         /// Specifies the three components of the profile and level indication.
         /// These values are elaborated across many pages in ISO13818-2 Section 8.
         /// </summary>
-        public byte profileAndLevelIndication
+        public byte ProfileAndLevelIndication
         {
             get
             {
-                return (byte)((byte)(profileAndLevelIndicationEscapeBit ? 0x80 : 0x00) | (((byte)profileIndication) << 4) | ((byte)levelIndication));
+                return (byte)((byte)(ProfileAndLevelIndicationEscapeBit ? 0x80 : 0x00) | (((byte)ProfileIndication) << 4) | ((byte)LevelIndication));
             }
             set
             {
                 if ((value & 0x80) == 0x80)
-                    profileAndLevelIndicationEscapeBit = true;
+                    ProfileAndLevelIndicationEscapeBit = true;
                 else
-                    profileAndLevelIndicationEscapeBit = false;
+                    ProfileAndLevelIndicationEscapeBit = false;
 
-                profileIndication = (ProfileIdentification)((value >> 4) & 0x7);
-                levelIndication = (LevelIdentification)(value & 0xF);
+                ProfileIndication = (ProfileIdentification)((value >> 4) & 0x7);
+                LevelIndication = (LevelIdentification)(value & 0xF);
             }
         }
 
@@ -159,31 +155,31 @@ namespace MPEG.PSI
         /// Explains the escape bit of the Profile and Level Indication
         /// See ISO13818-2 section 8 for more details
         /// </summary>
-        public bool profileAndLevelIndicationEscapeBit = true;
+        public bool ProfileAndLevelIndicationEscapeBit { get; set; } = true;
 
         /// <summary>
         /// Specifies the video profile used
         /// See ISO13818-2 section 8 for more details
         /// </summary>
-        public ProfileIdentification profileIndication = ProfileIdentification.Simple;
+        public ProfileIdentification ProfileIndication { get; set; } = ProfileIdentification.Simple;
 
         /// <summary>
         /// Specifies the video level used
         /// See ISO13818-2 Section 8 for more details.
         /// </summary>
-        public LevelIdentification levelIndication = LevelIdentification.Main;
+        public LevelIdentification LevelIndication { get; set; } = LevelIdentification.Main;
 
         /// <summary>
         /// ISO13818-1 2.6.3 chroma_format
         /// Defines the chroma format used by the video stream. Defined in detail in ISO13818-2 Table 6-5.
         /// </summary>
-        public ChromaFormat chroma = ChromaFormat.FourTwoZero;
+        public ChromaFormat Chroma { get; set; } = ChromaFormat.FourTwoZero;
 
         /// <summary>
         /// ISO13818-1 2.6.3 frame_rate_extension_flag
         /// When true specified that both the frame_rate_extension_n and frame_rate_extension_d are non-zero
         /// in any of the video sequences. For ISO/IEC 11172-2 contrained video, these fields should be zero.
         /// </summary>
-        public bool frameRateExtensionFlag = false;
+        public bool FrameRateExtensionFlag { get; set; } = false;
     }
 }

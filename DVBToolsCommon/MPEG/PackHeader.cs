@@ -29,7 +29,7 @@ namespace DVBToolsCommon.MPEG
     //        system_header ()
     //    }
     //}
-    class PackHeader : VideoComponent
+    internal class PackHeader : VideoComponent
     {
         public UInt64 systemClockReferenceBase;
         public UInt64 systemClockReferenceExtension;

@@ -8,10 +8,10 @@ namespace MultiplexerUI
 
     public partial class StreamSelectionForm : Form
     {
-        Form parentForm;
-        TransportMux.TransportMultiplexer multiplexer = null;
-        Timer progressTimer = new Timer();
-        long displayBitRate = 0;
+        private Form parentForm;
+        private TransportMux.TransportMultiplexer multiplexer = null;
+        private Timer progressTimer = new Timer();
+        private long displayBitRate = 0;
 
         public StreamSelectionForm(Form parent)
         {
@@ -29,7 +29,7 @@ namespace MultiplexerUI
             base.OnClosed(e);
         }
 
-        StreamListItem findByPID(ushort PID)
+        private StreamListItem findByPID(ushort PID)
         {
             for (int i = 0; i < streamListView.Items.Count; i++)
             {
@@ -40,7 +40,7 @@ namespace MultiplexerUI
             return null;
         }
 
-        ushort nextUnusedPID()
+        private ushort nextUnusedPID()
         {
             ushort pid = 0x1E2;
             while (findByPID(pid) != null)
@@ -402,7 +402,7 @@ namespace MultiplexerUI
         }
     }
 
-    class StreamListItem : ListViewItem
+    internal class StreamListItem : ListViewItem
     {
         public enum StreamTypes
         {
@@ -413,7 +413,7 @@ namespace MultiplexerUI
             DVBSubtitle
         };
 
-        StreamTypes streamType = StreamTypes.Undefined;
+        private StreamTypes streamType = StreamTypes.Undefined;
         public StreamTypes StreamType
         {
             get
@@ -427,7 +427,7 @@ namespace MultiplexerUI
             }
         }
 
-        ushort pid = 0x000;
+        private ushort pid = 0x000;
         public ushort PID
         {
             get
@@ -442,7 +442,7 @@ namespace MultiplexerUI
             }
         }
 
-        int streamDelay = 0;
+        private int streamDelay = 0;
         public int StreamDelay
         {
             get
@@ -460,7 +460,7 @@ namespace MultiplexerUI
             }
         }
 
-        string languageCode = "unk";
+        private string languageCode = "unk";
         public string LanguageCode
         {
             get
@@ -486,7 +486,7 @@ namespace MultiplexerUI
             }
         }
 
-        uint bitRate = 0;
+        private uint bitRate = 0;
         public uint BitRate
         {
             get
@@ -525,7 +525,7 @@ namespace MultiplexerUI
             SubItems.Add("");
         }
 
-        string streamTypeToString(StreamTypes value)
+        private string streamTypeToString(StreamTypes value)
         {
             switch (value)
             {
@@ -541,7 +541,7 @@ namespace MultiplexerUI
             return "Undefined";
         }
 
-        StreamTypes fileNameToType(string fileName)
+        private StreamTypes fileNameToType(string fileName)
         {
             FileInfo info = new FileInfo(fileName);
             if (!info.Exists)
@@ -565,7 +565,7 @@ namespace MultiplexerUI
 
         public TransportMux.InputStream InputStream = null;
 
-        uint detectMPEGBitRate(string fileName)
+        private uint detectMPEGBitRate(string fileName)
         {
             DVBToolsCommon.VideoDecoders.MPEG2Decoder decoder = new DVBToolsCommon.VideoDecoders.MPEG2Decoder();
             return decoder.DetectBitrate(fileName);

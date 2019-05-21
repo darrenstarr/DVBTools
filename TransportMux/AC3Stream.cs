@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-
-using DVBToolsCommon;
-
 namespace TransportMux
 {
+    using DVBToolsCommon;
+    using System;
+    using System.IO;
+
     public class AC3Stream : InputStream
     {
         #region "ISO13818-1 Systems Constants"
@@ -45,11 +43,10 @@ namespace TransportMux
         // adaptation_field_control			(2 bits)	(28)
         // continuity_counter				(4 bits)	(32)
         //												=32 bits or 4 bytes
-        const int PACKET_HEADER_LENGTH = 4;
-
-        const int PACKET_LENGTH = 188;
-        const int PACKET_PAYLOAD_LENGTH = (PACKET_LENGTH - PACKET_HEADER_LENGTH);
-        const int PACKET_PAYLOAD_LENGTH_PES = (PACKET_PAYLOAD_LENGTH - PES_HEADER_LENGTH_PTS);
+        private const int PACKET_HEADER_LENGTH = 4;
+        private const int PACKET_LENGTH = 188;
+        private const int PACKET_PAYLOAD_LENGTH = (PACKET_LENGTH - PACKET_HEADER_LENGTH);
+        private const int PACKET_PAYLOAD_LENGTH_PES = (PACKET_PAYLOAD_LENGTH - PES_HEADER_LENGTH_PTS);
         #endregion
 
         #region "AC-3 Constants"
@@ -98,10 +95,10 @@ namespace TransportMux
             SurroundMode_Dolby = 0x02
         };
 
-        const int AC3_PACKET_SAMPLES = 1536;
+        private const int AC3_PACKET_SAMPLES = 1536;
 
         #region "AC-3 Indexed Values Tables"
-        static uint[] ac3_bitrate_index =
+        private static readonly uint[] ac3_bitrate_index =
         { 
 	        32,
 	        40,
@@ -125,7 +122,7 @@ namespace TransportMux
 	        0,0,0,0,0,0,0,0,0,0,0,0,0
         };
 
-        static uint[,] ac3_frame_size = new uint[3, 32]
+        private static readonly uint[,] ac3_frame_size = new uint[3, 32]
         {
             {   
 		          64,   80,   96,  112,  128,  160,  192,  224, 
@@ -146,8 +143,7 @@ namespace TransportMux
                    0,    0,    0,    0,    0,    0,    0,    0
             }
         };
-
-        static int[] rates = 
+        private static readonly int[] rates = 
         { 
             48000, 
             44100, 
@@ -197,15 +193,15 @@ namespace TransportMux
         #endregion
 
         #region "Bitstream derived values"
-        int SampleRate;
-	    int FrameSize;
-	    int BitStreamCode;
-	    BitStreamModes BitStreamMode;
-	    AudioCodingModes AudioCodingMode;
-	    CenterLevelMixes CenterLevelMix;
-	    SurroundLevelMixes SurroundLevelMix;
-	    DolbySurroundModes SurroundMode;
-	    int LFEOn;
+        private int SampleRate;
+        private int FrameSize;
+        private int BitStreamCode;
+        private BitStreamModes BitStreamMode;
+        private AudioCodingModes AudioCodingMode;
+        private CenterLevelMixes CenterLevelMix;
+        private SurroundLevelMixes SurroundLevelMix;
+        private DolbySurroundModes SurroundMode;
+        private int LFEOn;
         #endregion
 
         #region "Overridden virtual members from InputStream"
@@ -225,7 +221,7 @@ namespace TransportMux
                 if (Packets.Count == 0)
                 {
                     while (!reader.AtEnd && Packets.Count < (1000000 / 188))
-                        readNextBuffer();
+                        ReadNextBuffer();
                 }
 
                 if (Packets.Count == 0)
@@ -239,7 +235,7 @@ namespace TransportMux
         /// <summary>
         /// Returns the period of time required to fill the main buffer (MB) to peak from zero based on the stram bitrate
         /// </summary>
-        long MainBufferFillTime
+        private long MainBufferFillTime
         {
             get
             {
@@ -257,17 +253,17 @@ namespace TransportMux
         /// a 10% over MainBufferFillTime delay, while functional (maybe logical) seems a little too
         /// hackish
         /// </todo>
-        long InitialTime;
+        private long InitialTime;
 
         /// <summary>
         /// The 27Mhz representation of the inital presentation time of the first audio unit of the stream
         /// </summary>
-	    long InitialPtsInt;
-	   
+        private long InitialPtsInt;
+
         /// <summary>
         /// The 90Khz representation of the duration of a single coded audio unit
         /// </summary>
-	    long AudioUnitDuration90Khz;
+        private long AudioUnitDuration90Khz;
 
         /// <summary>
         ///  A 90Khz representation of a running sum of the next presentation time stamp to print to the stream
@@ -276,39 +272,39 @@ namespace TransportMux
         /// figure out if it makes more sense just to multiply the number of transmitted audio units by the
         /// 90Khz value for representing the playtime of a single frame.
         /// </todo>
-        long NextTimeStamp;
-        
+        private long NextTimeStamp;
+
         /// <summary>
         /// The play duration of a single coded audio unit
         /// </summary>
-	    double TimePerFrame;
+        private double TimePerFrame;
 
         /// <summary>
         /// The transport stream packet continuity_counter
         /// </summary>
-        byte ContinuityCounter = 0;
+        private byte ContinuityCounter = 0;
 
         /// <summary>
         /// Tracks the number of bytes from the last audio unit contained within the previously coded PES packet
         /// </summary>
-        long BytesBeforeEndOfFrame = 0;
+        private long BytesBeforeEndOfFrame = 0;
 
         /// <summary>
         /// A 27Mhz representation of the transmission time (PCR relative) of the last constructed transport packet
         /// </summary>
-        long LastStamp = 0;
+        private long LastStamp = 0;
 
         #region "Values from AC-3 Header needed for descriptor"
         /// <summary>
         /// The sample rate code as extracted from the AC-3 header (fscod)
         /// </summary>
-        int sampleRateCode = 0;
+        private int sampleRateCode = 0;
 
         /// <summary>
         /// Returns the sample rate code to be inserted in the AC-3 Descriptor(0x81) for the stream
         /// </summary>
         /// For the moment, we just return the sampleRateCode as extracted from the AC-3 header as fscod
-        int descriptorSampleRateCode
+        private int descriptorSampleRateCode
         {
             get
             {
@@ -320,17 +316,17 @@ namespace TransportMux
         /// The bit rate code as expected by the AC-3 stream descriptor
         /// </summary>
         /// This value is deduced by taking the frmsizecod from the syncinfo in the header and shifting it right 1
-        int bitRateCode = 0;
+        private int bitRateCode = 0;
 
         /// <summary>
         /// The surround mode value extracted from the AC-3 header as expected by the AC-3 stream descriptor
         /// </summary>
-        int dsurmod = 0;
+        private int dsurmod = 0;
 
         /// <summary>
         /// Returns the acmod value as extracted from the AC-3 header bsi block
         /// </summary>
-        int numChannels
+        private int numChannels
         {
             get
             {
@@ -340,13 +336,11 @@ namespace TransportMux
 
         #endregion
 
-        long audioSample = 0;
-        StreamBuffer streamBuffer = new StreamBuffer();
-
-        TransportPackets Packets = new TransportPackets();        
-
-        FileStream inputFileStream = null;
-        BigEndianReader reader = null;
+        private long audioSample = 0;
+        private StreamBuffer streamBuffer = new StreamBuffer();
+        private TransportPackets Packets = new TransportPackets();
+        private FileStream inputFileStream = null;
+        private BigEndianReader reader = null;
 
         public override void Close()
         {
@@ -389,7 +383,7 @@ namespace TransportMux
 
 			        byte buffer = reader.ReadByte();
 			        sampleRateCode = (buffer >> 6) & 0x3;
-			        SampleRate = sampleRateFromCode(sampleRateCode);
+			        SampleRate = SampleRateFromCode(sampleRateCode);
 			        int frameSizeCode = (buffer & 0x3F);
                     bitRateCode = (frameSizeCode >> 1);
 
@@ -460,21 +454,21 @@ namespace TransportMux
             Close();
         }
 
-        void bufferMore()
+        private void BufferMore()
         {
             if (Packets.Count == 0)
             {
                 while (!reader.AtEnd && Packets.Count < (1000000 / 188))
-                    readNextBuffer();
+                    ReadNextBuffer();
             }
         }
 
-        int sampleRateFromCode(int code)
+        private int SampleRateFromCode(int code)
         {        	
         	return rates[code];
         }
 
-	    void readNextBuffer()
+        private void ReadNextBuffer()
         {
             long bytesBeforeTime = BytesBeforeEndOfFrame;
             long frames = AudioUnitsPerPES; 
@@ -518,34 +512,34 @@ namespace TransportMux
 		        // Transport Packet Header
 		        //------------------------------
 		        // sync_byte = 0x47					(8 bits)
-		        transportData.append((byte) 0x47);
-		        transportData.enterBitMode();
+		        transportData.Append((byte) 0x47);
+		        transportData.EnterBitMode();
 		        // transport_error_indicator		(1 bit)
-		        transportData.appendBit(0);
+		        transportData.AppendBit(0);
 		        // payload_unit_start_indicator		(1 bit)
-		        transportData.appendBit((byte)((i == 0) ? 1 : 0));
+		        transportData.AppendBit((byte)((i == 0) ? 1 : 0));
 		        // transport_priority				(1 bit)
-		        transportData.appendBit(0);
+		        transportData.AppendBit(0);
 		        // PID								(13 bits)
-		        transportData.appendBits(PID, 12, 0);
+		        transportData.AppendBits(PID, 12, 0);
 		        // transport_scrambling_code		(2 bits)
-		        transportData.appendBits((byte) 0x0, 1, 0);
+		        transportData.AppendBits((byte) 0x0, 1, 0);
 		        // adaptation_field_control			(2 bits)
-		        transportData.appendBits((byte) ((padding > 0) ? 0x3 : 0x1), 1, 0);
+		        transportData.AppendBits((byte) ((padding > 0) ? 0x3 : 0x1), 1, 0);
 		        // continuity_counter				(4 bits)
-		        transportData.appendBits(ContinuityCounter, 3, 0);
+		        transportData.AppendBits(ContinuityCounter, 3, 0);
                 ContinuityCounter++;
-		        transportData.leaveBitMode();
+		        transportData.LeaveBitMode();
 
                 int used = 4;
 
                 if (padding > 0)
                 {
-                    transportData.append((byte)(padding - 1));
+                    transportData.Append((byte)(padding - 1));
                     if (padding > 1)
-                        transportData.append((byte)0x00);
+                        transportData.Append((byte)0x00);
                     for (int paddingIndex = 2; paddingIndex < padding; paddingIndex++)
-                        transportData.append((byte)0xff);
+                        transportData.Append((byte)0xff);
                     used += (int) padding;
                     padding = 0;
                 }
@@ -557,12 +551,12 @@ namespace TransportMux
 			        //-------------------------------
 			        // packet_start_code_prefix			(24 bits)	(24)
 			        // streaid						(8 bits)	(32)
-			        transportData.append((uint) 0x000001BD);
+			        transportData.Append((uint) 0x000001BD);
 			        long packetLengthPosition = transportData.length;
 
                     ushort packetLength = (ushort)(bytesToConsume + 8);
 			        // Fill with dummy value
-			        transportData.append(packetLength);
+			        transportData.Append(packetLength);
 
 			        // '10'								(2 bits)	(02)	0x8000
 			        // PES_scrambling_code				(2 bits)	(04)	0x0000
@@ -578,10 +572,10 @@ namespace TransportMux
 			        // PES_CRC_flag						(1 bit)		(15)	0x0000
 			        // PES_extension_flag				(1 bit)		(16)	0x0000
 			        //														0x8480
-			        transportData.append((ushort) 0x8480);
+			        transportData.Append((ushort) 0x8480);
 
 			        // PES_header_data_length = 0x05	(8 bits)	(08)
-			        transportData.append((byte) 0x05);
+			        transportData.Append((byte) 0x05);
 
 			        //   '0010'							(4 bits)	(76)
 			        //   PTS[32..30]					(3 bits)	(79)
@@ -590,15 +584,15 @@ namespace TransportMux
 			        //   marker_bit						(1 bit)		(96)
 			        //   PTS[14..0]						(15 bits)	(111)
 			        //   marker_bit						(1 bit)		(112)
-			        transportData.enterBitMode();
-			        transportData.appendBits((byte) 0x2, 3, 0);
-			        transportData.appendBits(NextTimeStamp, 32, 30);
-			        transportData.appendBit(1);
-			        transportData.appendBits(NextTimeStamp, 29, 15);
-			        transportData.appendBit(1);
-			        transportData.appendBits(NextTimeStamp, 14, 0);
-			        transportData.appendBit(1);
-			        transportData.leaveBitMode();
+			        transportData.EnterBitMode();
+			        transportData.AppendBits((byte) 0x2, 3, 0);
+			        transportData.AppendBits(NextTimeStamp, 32, 30);
+			        transportData.AppendBit(1);
+			        transportData.AppendBits(NextTimeStamp, 29, 15);
+			        transportData.AppendBit(1);
+			        transportData.AppendBits(NextTimeStamp, 14, 0);
+			        transportData.AppendBit(1);
+			        transportData.LeaveBitMode();
 
                     NextTimeStamp += AudioUnitDuration90Khz * frames;
 			        used += 14;
@@ -608,7 +602,7 @@ namespace TransportMux
                 long payloadTransmissionTime = (long)27000000 * (long)payloadLength / (((long)BitRate * 1000) / 8);
 
                 for(int k=0; k<payloadLength; k++)
-			        transportData.append((byte) reader.ReadByte());                
+			        transportData.Append((byte) reader.ReadByte());                
 
 		        TransportPacket newPacket = new TransportPacket(transportData.buffer);
 
@@ -631,97 +625,97 @@ namespace TransportMux
 	        }
         }
 
-	    public override TransportPacket  TakePacket()
+	    public override TransportPacket TakePacket()
         {
             return Packets.TakeFirst();
         }
 
-        public override void  GenerateProgramMap(ByteArray Map)
+        public override void GenerateProgramMap(ByteArray map)
         {
 	        // stream_type = 0x81					(8 bits)
-	        Map.appendBits((byte) 0x81, 7, 0);
+	        map.AppendBits((byte) 0x81, 7, 0);
 
 	        // reserved = '111b'					(3 bits)
-	        Map.appendBits((byte) 0x7, 2, 0);
+	        map.AppendBits((byte) 0x7, 2, 0);
 
 	        // elementary_PID						(13 bits)
-	        Map.appendBits(PID, 12, 0);
+	        map.AppendBits(PID, 12, 0);
 
 	        // reserved = '1111b'					(4 bits)
-	        Map.appendBits((byte) 0xF, 3, 0);
+	        map.AppendBits((byte) 0xF, 3, 0);
 
             // ES_info_length = 0x013 (19 bytes)	(12 bits)
 	        // Old : ES_info_length = 0x00c (12 bytes)	(12 bits)
-	        Map.appendBits((ushort) 0x013, 11, 0);
+	        map.AppendBits((ushort) 0x013, 11, 0);
 
 	        // AC-3 Descriptor
 	        //		descriptor_tag = 0x05 (registration)	(8 bits)
-	        Map.appendBits((byte) 0x05, 7, 0);
+	        map.AppendBits((byte) 0x05, 7, 0);
 
 	        //		descriptor_length = 0x04				(8 bits)
-	        Map.appendBits((byte) 0x04, 7, 0);
+	        map.AppendBits((byte) 0x04, 7, 0);
 
 	        //		format_identifier = 'AC-3'				(32 bits)
-	        Map.appendBits((byte) 'A', 7, 0);
-	        Map.appendBits((byte) 'C', 7, 0);
-	        Map.appendBits((byte) '-', 7, 0);
-	        Map.appendBits((byte) '3', 7, 0);
+	        map.AppendBits((byte) 'A', 7, 0);
+	        map.AppendBits((byte) 'C', 7, 0);
+	        map.AppendBits((byte) '-', 7, 0);
+	        map.AppendBits((byte) '3', 7, 0);
 
 	        // ISO_639 Language Code Descriptor
 	        //		descriptor_tag = 0x0A (ISO-639)			(8 bits)
-	        Map.appendBits((byte) 0x0A, 7, 0);
+	        map.AppendBits((byte) 0x0A, 7, 0);
 
 	        //		descriptor_length = 0x04				(8 bits)
-	        Map.appendBits((byte) 0x04, 7, 0);
+	        map.AppendBits((byte) 0x04, 7, 0);
 
 	        //		ISO_639_language_code					(24 bits)
-	        Map.appendBits((byte) LanguageCode[0], 7, 0);
-	        Map.appendBits((byte) LanguageCode[1], 7, 0);
-	        Map.appendBits((byte) LanguageCode[2], 7, 0);
+	        map.AppendBits((byte) LanguageCode[0], 7, 0);
+	        map.AppendBits((byte) LanguageCode[1], 7, 0);
+	        map.AppendBits((byte) LanguageCode[2], 7, 0);
 
 	        //		audio_type = 0x00						(8 bits)
-	        Map.appendBits((byte) 0x00, 7, 0);
+	        map.AppendBits((byte) 0x00, 7, 0);
 
             // AC-3_audio_stream_descriptor()
             //      descriptor_tag = 0x81                   (8 bits)
-            Map.appendBits((byte)0x81, 7, 0);
+            map.AppendBits((byte)0x81, 7, 0);
 
             //      descriptor_length = 5                   (8 bits)
-            Map.appendBits((byte) 0x5, 7, 0);
+            map.AppendBits((byte) 0x5, 7, 0);
 
             //      sample_rate_code                        (3 bits)
-            Map.appendBits((byte)descriptorSampleRateCode, 2, 0);
+            map.AppendBits((byte)descriptorSampleRateCode, 2, 0);
 
             //      bsid = '01000'                          (5 bits)
-            Map.appendBits((byte)0x08, 4, 0);
+            map.AppendBits((byte)0x08, 4, 0);
 
             //      bit_rate_code                           (6 bits)
-            Map.appendBits((byte)bitRateCode, 5, 0);
+            map.AppendBits((byte)bitRateCode, 5, 0);
             
             //      surround_mode                           (2 bits)
-            Map.appendBits((byte)dsurmod, 1, 0);
+            map.AppendBits((byte)dsurmod, 1, 0);
 
             //      bsmod                                   (3 bits)
-            Map.appendBits((byte)BitStreamMode, 2, 0);
+            map.AppendBits((byte)BitStreamMode, 2, 0);
 
             //      num_channels                            (4 bits)
-            Map.appendBits((byte)numChannels, 3, 0);
+            map.AppendBits((byte)numChannels, 3, 0);
 
             //      full_svc (always true for us)           (1 bit)
-            Map.appendBit(1);
+            map.AppendBit(1);
 
             //      langcod (always 0 for us)               (8 bits)
-            Map.appendBits((byte)0, 7, 0);
+            map.AppendBits((byte)0, 7, 0);
 
             //      mainid (always 0 for us)                (3 bits)
-            Map.appendBits((byte)0, 2, 0);
+            map.AppendBits((byte)0, 2, 0);
 
             //      priority (always 3=not specified) for us    (2 bits)
             // TODO : Add a "primaryAudio" flag for this class, if set, then this value will be 1, alternatively, then 2
-            Map.appendBits((byte)3, 1, 0);
+            map.AppendBits((byte)3, 1, 0);
 
             //      reserved (all ones)                     (3 bits)
-            Map.appendBits((byte)7, 2, 0);
+            map.AppendBits((byte)7, 2, 0);
         }        
     }
 }

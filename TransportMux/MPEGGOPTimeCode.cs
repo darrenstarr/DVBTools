@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TransportMux
 {
+    using System;
+
     public class MPEGGOPTimeCode
     {
 	    public bool DropFrameFlag;
@@ -12,7 +10,7 @@ namespace TransportMux
 	    public byte Seconds;
 	    public byte Pictures;
 
-        public bool decodeFromGOPHeaderValue(uint input)
+        public bool DecodeFromGOPHeaderValue(uint input)
 	    {
 		    // drop_frame_flag			(1 bit)		(01)	>> 31
 		    // time_code_hours			(5 bits)	(06)	>> 26

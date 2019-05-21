@@ -54,9 +54,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamBuffer.cs" />
     <Compile Include="StreamBufferEvent.cs" />
+    <Compile Include="SubtitleItemList.cs" />
     <Compile Include="SubtitleStream.cs" />
+    <Compile Include="TimelineRegionList.cs" />
     <Compile Include="TransportMultiplexer.cs" />
     <Compile Include="TransportPacket.cs" />
+    <Compile Include="TransportPackets.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DVBToolsCommon\DVBToolsCommon.csproj">

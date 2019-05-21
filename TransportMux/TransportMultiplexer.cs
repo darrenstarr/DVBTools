@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
 namespace TransportMux
 {
+    using System;
+    using System.IO;
+
     public class TransportMultiplexer
     {
         public static TransportMultiplexer FirstInstance = null;
@@ -16,8 +14,7 @@ namespace TransportMux
 
         public ushort ProgramMapPID = 0x1E0;
         public ushort ProgramNumber = 0x2;
-
-        InputStream pcrStream = null;
+        private InputStream pcrStream = null;
 
         public InputStreams Streams = new InputStreams();
         public ulong BitsPerSecond = 6000000;
@@ -35,15 +32,15 @@ namespace TransportMux
             }
         }
 
-        string outputFileName = "";
-        TransportPacket NullPacket;
-        FileStream outputFileStream = null;
-        BinaryWriter writer = null;
-        ProgramTables ProgramTables = new ProgramTables();
+        private string outputFileName = "";
+        private TransportPacket NullPacket;
+        private FileStream outputFileStream = null;
+        private BinaryWriter writer = null;
+        private ProgramTables ProgramTables = new ProgramTables();
+        private System.Threading.Mutex cancelMutex;
+        private bool cancelled = false;
 
-        System.Threading.Mutex cancelMutex;
-        bool cancelled = false;
-        bool Cancelled
+        private bool Cancelled
         {
             get
             {
@@ -97,7 +94,7 @@ namespace TransportMux
         public void AddStream(InputStream stream)
         {
             Streams.Add(stream);
-            ProgramTables.generateProgramMap(ProgramMapPID, ProgramNumber, Streams);
+            ProgramTables.GenerateProgramMap(ProgramMapPID, ProgramNumber, Streams);
             if (stream.PCRStream)
                 pcrStream = stream;
         }
@@ -147,7 +144,7 @@ namespace TransportMux
                 return false;
 
             // Prepare the stream delays
-            MPEG2VideoStream videoStream = (MPEG2VideoStream)Streams.pcrStream;
+            MPEG2VideoStream videoStream = (MPEG2VideoStream)Streams.PcrStream;
             if (videoStream == null)
                 throw new Exception("No PCR stream specified");
 
@@ -187,7 +184,8 @@ namespace TransportMux
         }
 
         public ulong currentTime;
-        void ThreadRun()
+
+        private void ThreadRun()
         {
             if (writer == null)
             {

@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TransportMux
 {
     public class CRC
     {
-        static uint [] s_crc32_table =
+        private static readonly uint [] Crc32_table =
         {
           0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9,
           0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
@@ -80,7 +76,7 @@ namespace TransportMux
 	        uint crcResult = 0xFFFFFFFF;
 
 	        for(long index=0; index < length; index++)
-              crcResult = (crcResult << 8) ^ s_crc32_table[(crcResult >> 24) ^ (buffer[startIndex + index] & 0xFF)];
+              crcResult = (crcResult << 8) ^ Crc32_table[(crcResult >> 24) ^ (buffer[startIndex + index] & 0xFF)];
 
 	        return crcResult;
         }

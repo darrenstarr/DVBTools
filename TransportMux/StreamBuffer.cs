@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TransportMux
 {
+    using System.Collections.Generic;
+
     public class StreamBuffer
     {
         public int bufferLength = 0;

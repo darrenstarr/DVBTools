@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
 namespace TransportMux
 {
+    using System;
+    using System.IO;
+
     /// <summary>
     /// Provides a relatively good performance big-endian buffered file reading class.
     /// </summary>
@@ -16,14 +14,12 @@ namespace TransportMux
     /// </todo>
     public class BigEndianReaderBackEnd : BinaryReader
     {
-        const int InternalBufferLength = 2 * 1024 * 1024;
-
-        byte[] buffer = new byte[InternalBufferLength];
-        long bufferLength = 0;
-        long bufferStarts = 0;
-        long bufferEnds;
-
-        long position = 0;
+        private const int InternalBufferLength = 2 * 1024 * 1024;
+        private byte[] buffer = new byte[InternalBufferLength];
+        private long bufferLength = 0;
+        private long bufferStarts = 0;
+        private long bufferEnds;
+        private long position = 0;
 
         /// <summary>
         /// The length of the stream.
@@ -73,7 +69,7 @@ namespace TransportMux
             bufferEnds = bufferStarts + bufferLength - 1;
         }
 
-        void bufferMore()
+        private void bufferMore()
         {
             bufferStarts = position;
             bufferLength = Read(buffer, 0, buffer.Length);
@@ -198,9 +194,8 @@ namespace TransportMux
 
     public class BigEndianReader : BigEndianReaderBackEnd
     {
-        long LengthRead = -1;
-
-        long FileLength = 0;
+        private long LengthRead = -1;
+        private long FileLength = 0;
 
         public BigEndianReader(FileStream stream)
             : base(stream)
@@ -234,7 +229,7 @@ namespace TransportMux
             return result;
         }
 
-        public char readUTF8Char()
+        public char ReadUTF8Char()
         {
             byte current = ReadByte();
             char result = (char)0;
@@ -312,25 +307,17 @@ namespace TransportMux
             throw new Exception("Invalid UTF-8 sequence");
         }
 
-        public string readNullTerminatedUTF8()
+        public string ReadNullTerminatedUTF8()
         {
             string result = "";
 
-            char ch = readUTF8Char();
+            char ch = ReadUTF8Char();
             while (ch != (char)0)
             {
                 result += ch;
-                ch = readUTF8Char();
+                ch = ReadUTF8Char();
             }
 
-            return result;
-        }
-
-        public string readFourCC()
-        {
-            string result = "";
-            for (int i = 0; i < 4; i++)
-                result += (Char)ReadByte();
             return result;
         }
 

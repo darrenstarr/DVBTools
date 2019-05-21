@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-using DVBToolsCommon;
-
 namespace TransportMux
 {
+    using DVBToolsCommon;
+    using System;
+
     public abstract class InputStream
     {
         public virtual long StreamLength
@@ -43,7 +40,7 @@ namespace TransportMux
             }
         }
 
-        ushort pid;
+        private ushort pid;
         public virtual ushort PID
         {
             get
@@ -57,8 +54,7 @@ namespace TransportMux
         }
 
         public double streamDelay = 0;
-
-        double initialPTS = 0;
+        private double initialPTS = 0;
         public virtual double InitialPTS
         {
             get

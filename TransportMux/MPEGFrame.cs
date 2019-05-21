@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-using DVBToolsCommon;
-
 namespace TransportMux
 {
+    using DVBToolsCommon;
+    using System.Collections.Generic;
+
     public class MPEGFrame
     {
         public long  StartIndex = 0;

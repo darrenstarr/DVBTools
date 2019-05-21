@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-using DVBToolsCommon;
-
 namespace TransportMux
 {
+    using DVBToolsCommon;
+    using System;
+    using System.IO;
+
     public class MPEGAudioStream : InputStream
     {
         // packet_start_code_prefix			(24 bits)	(24)
@@ -82,15 +79,14 @@ namespace TransportMux
 	    public int CrcProtection;
 	    public int BitRateIndex;
 	    public int FrequencyIndex;
-	    MPEGAudioChannelMode ChannelMode;
+        private MPEGAudioChannelMode ChannelMode;
 
 	    public int SampleRate;
 	    public int BitRate;
 	    public int FrameSize;
 	    public int Slots;
-
-        long audioSample = 0;
-        StreamBuffer streamBuffer = new StreamBuffer();
+        private long audioSample = 0;
+        private StreamBuffer streamBuffer = new StreamBuffer();
 
         public override double InitialPTS
         {
@@ -110,23 +106,24 @@ namespace TransportMux
 		        nextTimeStamp = InitialPtsInt;
             }
         }
-	    long InitialPtsInt;
-        long InitialTime;
 
-	    long Pts;
-    	//long TimePerFrame;
-        double TimePerFrame;
+        private long InitialPtsInt;
+        private long InitialTime;
+        private long Pts;
+
+        //long TimePerFrame;
+        private double TimePerFrame;
 
 	    public byte StreamId = 0xC0;
-        byte ContinuityCounter = 0;
-	    long nextTimeStamp;
-        long BytesBeforeEndOfFrame = 0;
+        private byte ContinuityCounter = 0;
+        private long nextTimeStamp;
+        private long BytesBeforeEndOfFrame = 0;
 
         public long LastStamp = 0;
 
         public long CurrentStreamTime = 0;
 	    public long PrebufferTime;
-	    long timeDivision;
+        private long timeDivision;
         public double TimeDivision
         {
             set
@@ -146,21 +143,20 @@ namespace TransportMux
             }
         }
 
-        TransportPackets Packets = new TransportPackets();
+        private TransportPackets Packets = new TransportPackets();
 
-        void bufferMore()
+        private void BufferMore()
         {
             if (Packets.Count == 0)
             {
                 while (!reader.AtEnd && Packets.Count < (1000000 / 188))
-                    readNextBuffer(timeDivision);
+                    ReadNextBuffer(timeDivision);
             }
         }
 
         public string LanguageCode = "unk";
-
-        FileStream inputFileStream = null;
-        BigEndianReader reader = null;
+        private FileStream inputFileStream = null;
+        private BigEndianReader reader = null;
 
         public override void Close()
         {
@@ -260,7 +256,7 @@ namespace TransportMux
                 if (Packets.Count == 0)
                 {
                     while (!reader.AtEnd && Packets.Count < (1000000 / 188))
-                        readNextBuffer(timeDivision);
+                        ReadNextBuffer(timeDivision);
                 }
 
                 if (Packets.Count == 0)
@@ -273,34 +269,34 @@ namespace TransportMux
         public override void  GenerateProgramMap(ByteArray Map)
         {
  	        // stream_type = 0x03					(8 bits)
-	        Map.appendBits((byte) 0x03, 7, 0);
+	        Map.AppendBits((byte) 0x03, 7, 0);
 
 	        // reserved = '111b'					(3 bits)
-	        Map.appendBits((byte) 0x7, 2, 0);
+	        Map.AppendBits((byte) 0x7, 2, 0);
 
 	        // elementary_PID						(13 bits)
-	        Map.appendBits(PID, 12, 0);
+	        Map.AppendBits(PID, 12, 0);
 
 	        // reserved = '1111b'					(4 bits)
-	        Map.appendBits((byte) 0xF, 3, 0);
+	        Map.AppendBits((byte) 0xF, 3, 0);
 
 	        // ES_info_length = 0x006 (6 bytes)		(12 bits)
-	        Map.appendBits((ushort) 0x006, 11, 0);
+	        Map.AppendBits((ushort) 0x006, 11, 0);
 
 	        // ISO_639 Language Code Descriptor
 	        //		descriptor_tag = 0x0A (ISO-639)			(8 bits)
-	        Map.appendBits((byte) 0x0A, 7, 0);
+	        Map.AppendBits((byte) 0x0A, 7, 0);
 
 	        //		descriptor_length = 0x04				(8 bits)
-	        Map.appendBits((byte) 0x04, 7, 0);
+	        Map.AppendBits((byte) 0x04, 7, 0);
 
 	        //		ISO_639_language_code					(24 bits)
-	        Map.appendBits((byte) LanguageCode[0], 7, 0);
-	        Map.appendBits((byte) LanguageCode[1], 7, 0);
-	        Map.appendBits((byte) LanguageCode[2], 7, 0);
+	        Map.AppendBits((byte) LanguageCode[0], 7, 0);
+	        Map.AppendBits((byte) LanguageCode[1], 7, 0);
+	        Map.AppendBits((byte) LanguageCode[2], 7, 0);
 
 	        //		audio_type = 0x00						(8 bits)
-	        Map.appendBits((byte) 0x00, 7, 0);
+	        Map.AppendBits((byte) 0x00, 7, 0);
         }
 
         public override TransportPacket TakePacket()
@@ -317,7 +313,7 @@ namespace TransportMux
 	        }
         }
 
-        void readNextBuffer(long timeDivision)
+        private void ReadNextBuffer(long timeDivision)
         {
 	        long bytesBeforeTime = BytesBeforeEndOfFrame;
             long frames = 2;
@@ -369,34 +365,34 @@ namespace TransportMux
 		        // Transport Packet Header
 		        //------------------------------
 		        // sync_byte = 0x47					(8 bits)
-		        transportData.append((byte) 0x47);
-		        transportData.enterBitMode();
+		        transportData.Append((byte) 0x47);
+		        transportData.EnterBitMode();
 		        // transport_error_indicator		(1 bit)
-		        transportData.appendBit(0);
+		        transportData.AppendBit(0);
 		        // payload_unit_start_indicator		(1 bit)
-		        transportData.appendBit((byte)((i == 0) ? 1 : 0));
+		        transportData.AppendBit((byte)((i == 0) ? 1 : 0));
 		        // transport_priority				(1 bit)
-		        transportData.appendBit(0);
+		        transportData.AppendBit(0);
 		        // PID								(13 bits)
-		        transportData.appendBits(PID, 12, 0);
+		        transportData.AppendBits(PID, 12, 0);
 		        // transport_scrambling_code		(2 bits)
-		        transportData.appendBits((byte) 0x0, 1, 0);
+		        transportData.AppendBits((byte) 0x0, 1, 0);
 		        // adaptation_field_control			(2 bits)
-                transportData.appendBits((byte)((padding > 0) ? 0x3 : 0x1), 1, 0);
+                transportData.AppendBits((byte)((padding > 0) ? 0x3 : 0x1), 1, 0);
 		        // continuity_counter				(4 bits)
-		        transportData.appendBits(ContinuityCounter, 3, 0);
+		        transportData.AppendBits(ContinuityCounter, 3, 0);
                 ContinuityCounter++;
-		        transportData.leaveBitMode();
+		        transportData.LeaveBitMode();
 
 		        int used = 4;
 
                 if (padding > 0)
                 {
-                    transportData.append((byte)(padding - 1));
+                    transportData.Append((byte)(padding - 1));
                     if (padding > 1)
-                        transportData.append((byte)0x00);
+                        transportData.Append((byte)0x00);
                     for (int paddingIndex = 2; paddingIndex < padding; paddingIndex++)
-                        transportData.append((byte)0xff);
+                        transportData.Append((byte)0xff);
                     used += (int)padding;
                     padding = 0;
                 }
@@ -407,16 +403,16 @@ namespace TransportMux
 			        // PES Packet Header
 			        //-------------------------------
 			        // packet_start_code_prefix			(24 bits)	(24)
-			        transportData.append((byte) 0x00);
-			        transportData.append((byte) 0x00);
-			        transportData.append((byte) 0x01);
+			        transportData.Append((byte) 0x00);
+			        transportData.Append((byte) 0x00);
+			        transportData.Append((byte) 0x01);
 			        // stream_id						(8 bits)	(32)
-			        transportData.append(StreamId);
+			        transportData.Append(StreamId);
 			        long packetLengthPosition = transportData.length;
 
                     ushort packetLength = (ushort)(bytesToConsume + 8);
 			        // Fill with dummy value
-			        transportData.append(packetLength);
+			        transportData.Append(packetLength);
 
 			        // '10'								(2 bits)	(02)	0x8000
 			        // PES_scrambling_code				(2 bits)	(04)	0x0000
@@ -432,10 +428,10 @@ namespace TransportMux
 			        // PES_CRC_flag						(1 bit)		(15)	0x0000
 			        // PES_extension_flag				(1 bit)		(16)	0x0000
 			        //														0x8080
-			        transportData.append((ushort) 0x8480);
+			        transportData.Append((ushort) 0x8480);
 
 			        // PES_header_data_length = 0x05	(8 bits)	(08)
-			        transportData.append((byte) 0x05);
+			        transportData.Append((byte) 0x05);
 
 			        //   '0010'							(4 bits)	(76)
 			        //   PTS[32..30]					(3 bits)	(79)
@@ -444,15 +440,15 @@ namespace TransportMux
 			        //   marker_bit						(1 bit)		(96)
 			        //   PTS[14..0]						(15 bits)	(111)
 			        //   marker_bit						(1 bit)		(112)
-			        transportData.enterBitMode();
-			        transportData.appendBits((byte) 0x2, 3, 0);
-			        transportData.appendBits(nextTimeStamp, 32, 30);
-			        transportData.appendBit(1);
-			        transportData.appendBits(nextTimeStamp, 29, 15);
-			        transportData.appendBit(1);
-			        transportData.appendBits(nextTimeStamp, 14, 0);
-			        transportData.appendBit(1);
-			        transportData.leaveBitMode();
+			        transportData.EnterBitMode();
+			        transportData.AppendBits((byte) 0x2, 3, 0);
+			        transportData.AppendBits(nextTimeStamp, 32, 30);
+			        transportData.AppendBit(1);
+			        transportData.AppendBits(nextTimeStamp, 29, 15);
+			        transportData.AppendBit(1);
+			        transportData.AppendBits(nextTimeStamp, 14, 0);
+			        transportData.AppendBit(1);
+			        transportData.LeaveBitMode();
 
 			        nextTimeStamp += Pts * frames;
 			        used += 14;
@@ -462,7 +458,7 @@ namespace TransportMux
                 long payloadTransmissionTime = (long)27000000 * (long)payloadLength / (((long)BitRate * 1000) / 8);
 
                 for (int k = 0; k < payloadLength; k++)
-			        transportData.append((byte) reader.ReadByte());
+			        transportData.Append((byte) reader.ReadByte());
 
 		        TransportPacket newPacket = new TransportPacket(transportData.buffer);
 
@@ -514,7 +510,7 @@ namespace TransportMux
         //1101	416		320		256		224		144
         //1110	448		384		320		256		160
         //1111	bad		bad		bad		bad		bad
-        static uint [,,] mpegAudioBitRatesTable = new uint[4,3,16]
+        private static readonly uint [,,] mpegAudioBitRatesTable = new uint[4,3,16]
         {
 	        { /* MPEG audio V2.5 */
 		        {0,32,48,56,64,80,96,112,128,144,160,176,192,224,256,0},
@@ -543,7 +539,7 @@ namespace TransportMux
         //01		48000		24000		12000
         //10		32000		16000		8000
         //11		reserv.		reserv.		reserv.
-        static int [,] mpegAudioFrequencyTable = new int [4,4]
+        private static readonly int [,] mpegAudioFrequencyTable = new int [4,4]
         {
 	        /* MPEG audio V2.5 */
 	        {11025,12000,8000,0},
@@ -554,16 +550,14 @@ namespace TransportMux
 	        /* MPEG audio V1 */
 	        {44100, 48000, 32000, 0}
         };
-
-        static uint [] mpegAudioSlotsTable = 
+        private static readonly uint [] mpegAudioSlotsTable = 
         {
 	        12, 
 	        144, 
 	        144, 
 	        0
         };
-
-        static uint [] mpegAudioSamplesTable = 
+        private static readonly uint [] mpegAudioSamplesTable = 
         {
 	        384, 
 	        1152, 

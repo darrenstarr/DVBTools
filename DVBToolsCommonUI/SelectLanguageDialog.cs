@@ -6,7 +6,7 @@ namespace DVBToolsCommonUI
 
     public partial class SelectLanguageDialog : Form
     {
-        LanguageCodeItem selectedItem = null;
+        private LanguageCodeItem selectedItem = null;
 
         public string Language
         {
@@ -42,7 +42,7 @@ namespace DVBToolsCommonUI
             FillList();
         }
 
-        void LocateLanguage(string language)
+        private void LocateLanguage(string language)
         {
             for (int i = 0; i < languageCodeList.Items.Count; i++)
             {
@@ -58,7 +58,7 @@ namespace DVBToolsCommonUI
             }
         }
 
-        void LocateLanguageCode(string languageCode)
+        private void LocateLanguageCode(string languageCode)
         {
             for (int i = 0; i < languageCodeList.Items.Count; i++)
             {
@@ -74,7 +74,7 @@ namespace DVBToolsCommonUI
             }
         }
 
-        void FillList()
+        private void FillList()
         {
             LanguageCodeItem unknownItem = new LanguageCodeItem("(Unspecified)", "unk");
             languageCodeList.Items.Add(unknownItem);

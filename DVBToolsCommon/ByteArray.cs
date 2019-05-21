@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon
 {
+    using System;
+
     public class ByteArray
     {
         public byte[] buffer = null;
@@ -11,10 +9,9 @@ namespace DVBToolsCommon
 
         public long MaxSize = -1;
         public long GrowSize = 65536;
-
-        byte BitModeBuffer;
-	    int CurrentBit;
-	    bool BitMode;
+        private byte BitModeBuffer;
+        private int CurrentBit;
+        private bool BitMode;
 
         public byte this[long index]
         {
@@ -40,7 +37,7 @@ namespace DVBToolsCommon
             }
         }
 
-        void grow()
+        private void Grow()
         {
             if (MaxSize > 0)
             {
@@ -77,7 +74,7 @@ namespace DVBToolsCommon
             }
         }
 
-        void grow(long upTo)
+        private void Grow(long upTo)
         {
             if (buffer == null)
                 buffer = new byte[upTo];
@@ -90,57 +87,57 @@ namespace DVBToolsCommon
             }
         }
 
-        public void append(byte value)
+        public void Append(byte value)
         {
-            grow();
+            Grow();
             buffer[length++] = value;
         }
 
-        public void append(ushort value)
+        public void Append(ushort value)
         {
-            grow();
+            Grow();
             buffer[length++] = (byte)(value >> 8);
             buffer[length++] = (byte)(value & 0xFF);
         }
 
-        public void append(uint value)
+        public void Append(uint value)
         {
-            grow();
+            Grow();
             buffer[length++] = (byte)(value >> 24);
             buffer[length++] = (byte)((value >> 16) & 0xFF);
             buffer[length++] = (byte)((value >> 8) & 0xFF);
             buffer[length++] = (byte)(value & 0xFF);
         }
 
-        public void append(short value)
+        public void Append(short value)
         {
-            append((ushort)value);
+            Append((ushort)value);
         }
 
-        public void append(int value)
+        public void Append(int value)
         {
-            append((uint)value);
+            Append((uint)value);
         }
 
-        public void enterBitMode()
+        public void EnterBitMode()
         {
 	        CurrentBit = 7;
 	        BitModeBuffer = 0;
 	        BitMode = true;
         }
 
-	    public void leaveBitMode()
+	    public void LeaveBitMode()
 	    {
 		    if(!BitMode)
 			    return;
 
 		    if(CurrentBit != 7)
-			    append(BitModeBuffer);
+			    Append(BitModeBuffer);
 
 		    BitMode = false;
 	    }
 
-	    public void appendBit(byte bit)
+	    public void AppendBit(byte bit)
 	    {
 		    if(bit != 0)
 		    {
@@ -150,18 +147,18 @@ namespace DVBToolsCommon
 		    CurrentBit --;
 		    if(CurrentBit < 0)
 		    {
-			    append(BitModeBuffer);
+			    Append(BitModeBuffer);
 			    BitModeBuffer = 0;
 			    CurrentBit = 7;
 		    }
 	    }
 
-        public void appendBits(long value, int highBit, int lowBit)
+        public void AppendBits(long value, int highBit, int lowBit)
         {
-            appendBits((ulong)value, highBit, lowBit);        
+            AppendBits((ulong)value, highBit, lowBit);        
         }
 
-	    public void appendBits(ulong value, int highBit, int lowBit)
+	    public void AppendBits(ulong value, int highBit, int lowBit)
 	    {
 		    if(highBit < lowBit)
 			    throw new Exception("NBuffer::appendBits(unsigned __int64, int, int) : high bit is lower than low bit");
@@ -176,15 +173,15 @@ namespace DVBToolsCommon
 		    for(int index = highBit; index >= lowBit; index--)
 		    {
 			    if((value & mask) == mask)
-				    appendBit(1);
+				    AppendBit(1);
 			    else
-				    appendBit(0);
+				    AppendBit(0);
 
 			    mask >>= 1;
 		    }
 	    }
 
-	    public void appendBits(uint value, int highBit, int lowBit)
+	    public void AppendBits(uint value, int highBit, int lowBit)
 	    {
 		    if(highBit < lowBit)
 			    throw new Exception("NBuffer::appendBits(unsigned int, int, int) : high bit is lower than low bit");
@@ -199,15 +196,15 @@ namespace DVBToolsCommon
 		    for(int index = highBit; index >= lowBit; index--)
 		    {
 			    if((value & mask) == mask)
-				    appendBit(1);
+				    AppendBit(1);
 			    else
-				    appendBit(0);
+				    AppendBit(0);
 
 			    mask >>= 1;
 		    }
 	    }
 
-	    public void appendBits(ushort value, int highBit, int lowBit)
+	    public void AppendBits(ushort value, int highBit, int lowBit)
 	    {
 		    if(highBit < lowBit)
 			    throw new Exception("NBuffer::appendBits(unsigned short, int, int) : high bit is lower than low bit");
@@ -222,15 +219,15 @@ namespace DVBToolsCommon
 		    for(int index = highBit; index >= lowBit; index--)
 		    {
 			    if((value & mask) == mask)
-				    appendBit(1);
+				    AppendBit(1);
 			    else
-				    appendBit(0);
+				    AppendBit(0);
 
 			    mask >>= 1;
 		    }
 	    }
 
-	    public void appendBits(byte value, int highBit, int lowBit)
+	    public void AppendBits(byte value, int highBit, int lowBit)
 	    {
 		    if(highBit < lowBit)
 			    throw new Exception("NBuffer::appendBits(unsigned char, int, int) : high bit is lower than low bit");
@@ -245,17 +242,17 @@ namespace DVBToolsCommon
 		    for(int index = highBit; index >= lowBit; index--)
 		    {
 			    if((value & mask) == mask)
-				    appendBit(1);
+				    AppendBit(1);
 			    else
-				    appendBit(0);
+				    AppendBit(0);
 
 			    mask >>= 1;
 		    }
 	    }
 
-        public void append(byte[] buffer, long startIndex, long length)
+        public void Append(byte[] buffer, long startIndex, long length)
         {
-            grow(length + this.length);
+            Grow(length + this.length);
             for (int i = 0; i < length; i++)
                 this.buffer[this.length++] = buffer[startIndex + i];
         }

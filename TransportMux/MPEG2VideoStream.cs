@@ -108,8 +108,8 @@ namespace TransportMux
             MPEG_ERROR_BUFFER_OVERFLOW
         }
 
-        FileStream inputFile;
-        BigEndianReader reader;
+        private FileStream inputFile;
+        private BigEndianReader reader;
 
         public double InitialDTS = 0.22919;
 
@@ -135,36 +135,32 @@ namespace TransportMux
 	    public MPEGFrames Frames = new MPEGFrames();
 	    public int CurrentOutputFrame;
 	    public int FrameStartIndex;
+        private TransportPackets TransportPackets = new TransportPackets();
+        private bool firstPacket = true;
+        private int pictureVBVDelay = 0;
 
-        TransportPackets TransportPackets = new TransportPackets();
-
-        bool firstPacket = true;
-
-        int pictureVBVDelay = 0;
-
-        void bufferMore()
+        private void BufferMore()
         {
             if (TransportPackets.Count == 0)
             {
                 while (inputFile.Position < inputFile.Length && TransportPackets.Count < (1000000 / 188))
                 {
-                    if (!readNextSequence())
+                    if (!ReadNextSequence())
                     {
                         return;
                     }
 
-                    packetize(InitialDTS);
+                    Packetize(InitialDTS);
                 }
             }
         }
 
-	    ushort Pid;
+        private ushort Pid;
         public byte ContinuityIndicator = 0;
 
         public delegate void MPEGTimeCodeEncountered(string time);
         public MPEGTimeCodeEncountered MPEGTimeCodeEncounteredEvent;
-
-        long streamLength = 0;
+        private long streamLength = 0;
         public override long StreamLength
         {
             get
@@ -189,8 +185,8 @@ namespace TransportMux
             streamLength = inputFile.Length;
             reader = new BigEndianReader(inputFile);
 
-            allocateInitialBuffer();
-            bufferMore();
+            AllocateInitialBuffer();
+            BufferMore();
         }
 
         ~MPEG2VideoStream()
@@ -212,15 +208,15 @@ namespace TransportMux
                 inputFile = null;
             }
         }
-    
-        void allocateInitialBuffer()
+
+        private void AllocateInitialBuffer()
         {
             bufferSize = MaximumBitRate / 8;
             buffer = new byte[bufferSize];
             bufferLength = 0;
         }
 
-        bool readNextSequence()
+        private bool ReadNextSequence()
         {
 	        bufferLength = 0;
             Frames.Clear();
@@ -228,7 +224,7 @@ namespace TransportMux
 	        SequenceFrames = 0;
 	        SequenceStartFrame = CurrentFrame;
         	
-	        if(!findNextSequenceStart())
+	        if(!FindNextSequenceStart())
 	        {
                 LastError = ErrorCode.MPEG_ERROR_NOSEQUENCE;
 		        return false;
@@ -239,10 +235,10 @@ namespace TransportMux
 	        newFrame.StartIndex = bufferLength - 4;	// -4 compensates for sequence start code
 	        newFrame.FrameNumber = CurrentFrame++;
 
-	        if(!consumeSequenceHeader())
+	        if(!ConsumeSequenceHeader())
 		        return false;
 
-	        if(!consumeExtensions(0))
+	        if(!ConsumeExtensions(0))
 		        return false;
 
 	        int pictures = 0;
@@ -253,11 +249,11 @@ namespace TransportMux
                 if (startCode == MPEG_CODE_GROUP_START)
                 {
                     newFrame.StartOfGOP = true;
-                    consumeGroupOfPicturesHeader();
-                    consumeExtensions(1);
+                    ConsumeGroupOfPicturesHeader();
+                    ConsumeExtensions(1);
                 }
                 else if (startCode >= MPEG_CODE_SLICE_START_LOW && startCode <= MPEG_CODE_SLICE_START_HIGH)
-                    consumeSlice();
+                    ConsumeSlice();
                 else if (startCode == MPEG_CODE_PICTURE_START)
                 {
                     picture++;
@@ -270,7 +266,7 @@ namespace TransportMux
                         newFrame.FrameNumber = CurrentFrame++;
                     }
                     pictures++;
-                    consumePictureHeader();
+                    ConsumePictureHeader();
 
                     if (PictureCodingType == 1)
                         newFrame.FrameType = 'I';
@@ -284,11 +280,11 @@ namespace TransportMux
                     newFrame.VBVDelay = PictureVBVDelay;
                 }
                 else if (startCode == MPEG_CODE_EXTENSION_START)
-                    consumeExtensions(2);
+                    ConsumeExtensions(2);
                 else if (startCode == MPEG_CODE_SEQUENCE_END)
                 {
                     // consume sequence_end_code
-                    readAndBuffer32();
+                    ReadAndBuffer32();
                     done = true;
                 }
                 else
@@ -301,16 +297,16 @@ namespace TransportMux
 	        return true;
         }
 
-	    bool findNextSequenceStart()
+        private bool FindNextSequenceStart()
         {
-	        uint currentStartCode = readAndBuffer32();
+	        uint currentStartCode = ReadAndBuffer32();
             long position = reader.Position;
             long length = reader.Length;
 
             while(position < length && currentStartCode != 0x000001B3)
 	        {
 		        currentStartCode <<= 8;
-		        currentStartCode |= (uint) readAndBuffer8();
+		        currentStartCode |= (uint) ReadAndBuffer8();
                 position++;
 	        }
 
@@ -320,48 +316,48 @@ namespace TransportMux
 	        return false;
         }
 
-	    bool consumeSequenceHeader()
+        private bool ConsumeSequenceHeader()
         {
 	        TopFieldFirst = false;
 	        RepeatFirstField = false;
 	        ProgressiveSequence = false;
 
 	        // horizontal_size_value (12 bits) + vertical_size_value (12 bits)
-	        readAndBuffer24();
+	        ReadAndBuffer24();
         	
 	        // aspect_ratio_information (4 bits) + frame_rate_code (4 bits)
-	        byte temp = readAndBuffer8();
-	        SequenceFrameRate = frameRateFromCode(temp & 0x0f);
+	        byte temp = ReadAndBuffer8();
+	        SequenceFrameRate = FrameRateFromCode(temp & 0x0f);
 
 	        // bit_rate_value (18 bits) + marker_bit (1 bit) + vbv_buffer_size_value (10 bits) +
 	        // constrained parameters_flag (1 bit) + load_intra_quantizer_matrix (1 bit) = 31 bits
-	        uint temp32 = readAndBuffer32();
+	        uint temp32 = ReadAndBuffer32();
             bitRateValue = (temp32 >> 14) & 0x3FFFF;
             vbvBufferSizeValue = (temp32 >> 3) & 0x3FF;
 
 	        if((temp32 & 0x00000002) == 0x00000002)		// load_intra_quantizer_matrix
 	        {
                 for (int i = 0; i < 63; i++)
-                    readAndBuffer8();
+                    ReadAndBuffer8();
 
-		        temp32 = readAndBuffer8();
+		        temp32 = ReadAndBuffer8();
 	        }
 	        if((temp32 & 0x00000001) == 0x00000001)
 	        {
 		        for(int i=0; i<16; i++)
-			        readAndBuffer32();
+			        ReadAndBuffer32();
 	        }
 
-	        return nextStartCode();
+	        return NextStartCode();
         }
-	
-        bool consumeExtensions(int mode)
+
+        private bool ConsumeExtensions(int mode)
         {
             var startCode = reader.Peek32();
 	        while((mode != 1 && startCode == MPEG_CODE_EXTENSION_START) || startCode == MPEG_CODE_USER_DATA_START)
 	        {
 		        // extension_start_code (32 bits)
-		        readAndBuffer32();
+		        ReadAndBuffer32();
 
                 if (mode != 1 && startCode == MPEG_CODE_EXTENSION_START)
                 {
@@ -371,69 +367,69 @@ namespace TransportMux
                     switch (temp >> 4)
                     {
                         case MPEG_EXTENSION_SEQUENCE:
-                            if (!consumeSequenceExtension(temp))
+                            if (!ConsumeSequenceExtension(temp))
                                 return false;
 
                             break;
 
                         case MPEG_EXTENSION_SEQUENCE_DISPLAY:
-                            if (!consumeSequenceDisplayExtension(temp))
+                            if (!ConsumeSequenceDisplayExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_SEQUENCE_SCALABLE:
-                            if (!consumeSequenceScalableExtension(temp))
+                            if (!ConsumeSequenceScalableExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_PICTURE_CODING:
-                            if (!consumePicturecodingExtension(temp))
+                            if (!ConsumePicturecodingExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_QUANTIZER_MATRIX:
-                            if (!consumeQuantizerMatrixExtension(temp))
+                            if (!ConsumeQuantizerMatrixExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_PICTURE_DISPLAY:
-                            if (!consumePictureDisplayExtension(temp))
+                            if (!ConsumePictureDisplayExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_PICTURE_SPATIAL:
-                            if (!consumePictureSpatialScalableExtension(temp))
+                            if (!ConsumePictureSpatialScalableExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_PICTURE_TEMPORAL:
-                            if (!consumePictureTemporalScalableExtension(temp))
+                            if (!ConsumePictureTemporalScalableExtension(temp))
                                 return false;
                             break;
 
                         case MPEG_EXTENSION_COPYRIGHT:
-                            if (!consumeCopyrightExtension(temp))
+                            if (!ConsumeCopyrightExtension(temp))
                                 return false;
                             break;
                     }
                 }
                 else // startCode == MPEG_CODE_USER_DATA_START
                 {
-                    if (!consumeUserData())
+                    if (!ConsumeUserData())
                         return false;                    
                 }
-		        nextStartCode();
+		        NextStartCode();
                 startCode = reader.Peek32();
             }
 
-	        return nextStartCode();
+	        return NextStartCode();
         }
 
-	    bool consumeSequenceExtension(byte previousByte)
+        private bool ConsumeSequenceExtension(byte previousByte)
         {
 	        // extension_start_code_identifier			(4 bits)	04
 	        // top nibble of extension_start_code		(4 bits)	08
-	        append8(previousByte);
+	        Append8(previousByte);
 
 	        // bottom nibble of extension_start_code	(4 bits)	04
 	        // progressive_sequence						(1 bit)		05
@@ -443,7 +439,7 @@ namespace TransportMux
 	        // bit_rate_extension						(12 bits)	23
 	        // marker_bit								(1 bit)		24
 	        // vbv_buffer_size_extension				(8 bits)	32
-	        uint temp = readAndBuffer32();
+	        uint temp = ReadAndBuffer32();
             bitRateExtension = (temp >> 9) & 0xFFF;
             vbvBufferSizeExtension = temp & 0xFF;
 
@@ -452,17 +448,17 @@ namespace TransportMux
 	        // low_delay								(1 bit)		01
 	        // frame_rate_extension_n					(2 bits)	03
 	        // frame_rate_extension_d					(5 bits)	08
-	        readAndBuffer8();
+	        ReadAndBuffer8();
 
 	        return true;
         }
 
-	    bool consumeSequenceDisplayExtension(byte previousByte)
+        private bool ConsumeSequenceDisplayExtension(byte previousByte)
         {
             // extension_start_code_identifier			(4 bits)	04
             // video_format								(3 bits)	07
             // colour_description						(1 bit)		08
-            append8(previousByte);
+            Append8(previousByte);
 
             // if(colour_description)
             if ((previousByte & 0x01) == 0x01)
@@ -470,23 +466,23 @@ namespace TransportMux
                 // colour_primaries						(8 bits)	08
                 // transfer_characteristics				(8 bits)	16
                 // matrix_coefficients					(8 bits)	24
-                readAndBuffer24();
+                ReadAndBuffer24();
             }
 
             // display_horizontal_size					(14 bits)	14
             // marker_bit								(1 bit)		15
             // display_vertical_size					(14 bits)	29
-            readAndBuffer32();
+            ReadAndBuffer32();
 
             return true;
         }
 
-	    bool consumeSequenceScalableExtension(byte previousByte)
+        private bool ConsumeSequenceScalableExtension(byte previousByte)
         {
 	        // extension_start_code_identifier			(4 bits)	04
 	        // scalable_mode							(2 bits)	06
 	        // layer_id (top 2 bits)					(2 bits)	08
-	        append8(previousByte);
+	        Append8(previousByte);
 
 	        byte scalable_mode = (byte)((previousByte >> 2) & 0x03);
 
@@ -501,8 +497,8 @@ namespace TransportMux
 		        // vertical_subsampling_factor_m			(5 bits)	46
 		        // vertical_subsampling_factor_n			(5 bits)	51
 		        // -- Round to 7 bytes (56 bits)
-		        readAndBuffer32();
-		        readAndBuffer24();
+		        ReadAndBuffer32();
+		        ReadAndBuffer24();
 	        }
 	        else if(scalable_mode == MPEG_SCALABILITY_TEMPORAL)
 	        {
@@ -513,23 +509,23 @@ namespace TransportMux
 		        // picture_mux_order						(3 bits)	07
 		        // picture_mux_factor						(3 bits)	10
 		        // -- round to 2 bytes (16 bits)
-		        readAndBuffer16();
+		        ReadAndBuffer16();
 	        }
 	        else
 	        {
 		        // layer_id (bottom 2 bits)					(2 bits)	02
 		        // -- round to 1 byte (8 bits)
-		        readAndBuffer8();
+		        ReadAndBuffer8();
 	        }
 
 	        return true;
         }
-	    
-        bool consumePicturecodingExtension(byte previousByte)
+
+        private bool ConsumePicturecodingExtension(byte previousByte)
         {
 	        // extension_start_code_identifier			(4 bits)	04
 	        // f_code[0][0] - forward horizontal		(4 bits)	08
-	        append8(previousByte);
+	        Append8(previousByte);
 
 	        // f_code[0][1] - forward vertical			(4 bits)	04
 	        // f_code[1][0] - backward horizontal		(4 bits)	08
@@ -544,7 +540,7 @@ namespace TransportMux
 	        // alternate_scan							(1 bit)		22
 	        // repeat_first_field						(1 bit)		23
 	        // chroma_420_type							(1 bit)		24
-	        uint temp32 = readAndBuffer24();
+	        uint temp32 = ReadAndBuffer24();
 	        TopFieldFirst = (temp32 & 0x000080) == 0x000080 ? true : false;
 	        RepeatFirstField = (temp32 & 0x000002) == 0x000002 ? true : false;
 	        PictureStructure = (byte)((temp32 >> 1) & 0x03);
@@ -560,25 +556,25 @@ namespace TransportMux
 		        // sub_carrier							(1 bit)		07
 		        // burst_amplitude						(7 bits)	14
 		        // sub_carrier_phase					(8 bits)	24
-		        append8(temp);
-		        readAndBuffer16();
+		        Append8(temp);
+		        ReadAndBuffer16();
 	        }
 	        else
 	        {
 		        // progressive_frame					(1 bit)		01
 		        // composite_display_flag				(1 bit)		02
 		        // - round to 1 byte (8 bits)
-		        append8(temp);
+		        Append8(temp);
 	        }
 
 	        return true;
         }
 
-	    bool consumeQuantizerMatrixExtension(byte previousByte)
+        private bool ConsumeQuantizerMatrixExtension(byte previousByte)
         {
 	        // extension_start_code_identifier			(4 bits)	04
 	        // load_intra_quantiser_matrix				(1 bit)		05
-	        append8(previousByte);
+	        Append8(previousByte);
 
 	        byte temp = previousByte;
 	        if((temp & 0x08) == 0x08)
@@ -586,8 +582,8 @@ namespace TransportMux
 		        // if(load_intra_quantiser_matrix)
 		        //		intra_quantiser_matrix			(8*64 bits)	512
 		        for(int i=0; i<63; i++)
-			        readAndBuffer8();
-		        temp = readAndBuffer8();
+			        ReadAndBuffer8();
+		        temp = ReadAndBuffer8();
 	        }
 
 	        // load_non_intra_quantiser_matrix			(1 bit)		01
@@ -596,8 +592,8 @@ namespace TransportMux
 		        // if(load_non_intra_quantiser_matrix)
 		        //		non_intra_quantiser_matrix		(8*64 bits)	512
 		        for(int i=0; i<63; i++)
-                    readAndBuffer8();
-		        temp = readAndBuffer8();
+                    ReadAndBuffer8();
+		        temp = ReadAndBuffer8();
 	        }
 
 	        // load_chroma_intra_quantiser_matrix		(1 bit)		01
@@ -606,8 +602,8 @@ namespace TransportMux
 		        // if(load_chroma_intra_quantiser_matrix)
 		        //		chroma_intra_quantiser_matrix	(8*64 bits)	512
 		        for(int i=0; i<63; i++)
-			        readAndBuffer8();
-		        temp = readAndBuffer8();
+			        ReadAndBuffer8();
+		        temp = ReadAndBuffer8();
 	        }
 
 	        // load_chroma_non_intra_quantiser_matrix	(1 bit)		01
@@ -616,13 +612,13 @@ namespace TransportMux
 		        // if(load_chroma_non_intra_quantiser_matrix)
 		        //		chroma_non_intra_quantiser_matrix	(8*64 bits)	512
 		        for(int i=0; i<16; i++)
-			        readAndBuffer32();
+			        ReadAndBuffer32();
 	        }
 
 	        return true;
         }
 
-	    bool consumePictureDisplayExtension(byte previousByte)
+        private bool ConsumePictureDisplayExtension(byte previousByte)
         {
             int numberOfFrameCenterOffsets = 0;
             if (ProgressiveSequence)
@@ -652,7 +648,7 @@ namespace TransportMux
 
             // extension_start_code_identifier			(4 bits)	04
             // 4 bits left over, handled below
-            append8(previousByte);
+            Append8(previousByte);
 
             // for(i=0; i<number_of_frame_centre_offsets; i++)
             // {
@@ -663,16 +659,16 @@ namespace TransportMux
             // }
             int bytesToConsume = ((34 * numberOfFrameCenterOffsets) - 4) / 8;
             for(int i=0; i<bytesToConsume; i++)
-                readAndBuffer8();
+                ReadAndBuffer8();
 
             return true;
         }
 
-	    bool consumePictureSpatialScalableExtension(byte previousByte)
+        private bool ConsumePictureSpatialScalableExtension(byte previousByte)
         {
             // extension_start_code_identifier			(4 bits)	04
             // top 4 bits of lower_layer_temporal_reference	(4 bits)08
-            append8(previousByte);
+            Append8(previousByte);
 
             // bottom 6 bits of lower_layer_temporal_reference (6 bits)	06
             // marker_bit								(1 bit)		07
@@ -682,34 +678,34 @@ namespace TransportMux
             // spatial_temporal_weight_code_table_index	(2 bits)	40
             // lower_layer_progressive_frame			(1 bit)		41
             // lower_layer_deinterlaced_field_select	(1 bit)		42
-            readAndBuffer32();
-            readAndBuffer16();
+            ReadAndBuffer32();
+            ReadAndBuffer16();
 
             return true;
         }
 
-	    bool consumePictureTemporalScalableExtension(byte previousByte)
+        private bool ConsumePictureTemporalScalableExtension(byte previousByte)
         {
             // extension_start_code_identifier			(4 bits)	04
             // reference_select_code					(2 bits)	06
             // top 2 bits of forward_temporal_reference	(2 bits)	08
-            append8(previousByte);
+            Append8(previousByte);
 
             // bottom 8 bits of forward_temporal_reference (8 bits)	08
             // marker_bit								(1 bit)		09
             // backward_temporal_reference				(10 bits)	19
             // -- round to 3 bytes or 24 bits
-            readAndBuffer24();
+            ReadAndBuffer24();
 
             return true;
         }
 
-        bool consumeCopyrightExtension(byte previousByte)
+        private bool ConsumeCopyrightExtension(byte previousByte)
         {
             // extension_start_code_identifier			(4 bits)	04
             // copyright_flag							(1 bit)		05
             // copyright_identifier (top 3 bits)		(3 bits)	08
-            append8(previousByte);
+            Append8(previousByte);
 
             // copyright_identifier (bottom 5 bits)		(5 bits)	05
             // original_or_copy							(1 bit)		06
@@ -720,24 +716,24 @@ namespace TransportMux
             // copyright_number_2						(22 bits)	57
             // marker_bit								(1 bit)		58
             // copyright_number_3						(22 bits)	80
-            readAndBuffer32();
-            readAndBuffer32();
-            readAndBuffer16();
+            ReadAndBuffer32();
+            ReadAndBuffer32();
+            ReadAndBuffer16();
 
             return true;
         }
 
-	    bool consumeGroupOfPicturesHeader()
+        private bool ConsumeGroupOfPicturesHeader()
         {
 	        // group_start_code			(32 bits)	(32)
-	        readAndBuffer32();
+	        ReadAndBuffer32();
 
 	        // time_code				(25 bits)	(25)
 	        // closed_gop				(1 bit)		(26)
 	        // broken_link				(1 bit)		(27)
 	        // - round to 4 bytes (32 bits) 
-	        uint time_code  = readAndBuffer32();
-	        GopTimeCode.decodeFromGOPHeaderValue(time_code);
+	        uint time_code  = ReadAndBuffer32();
+	        GopTimeCode.DecodeFromGOPHeaderValue(time_code);
 
             //System.Diagnostics.Debug.WriteLine(GopTimeCode.ToString());
             if (MPEGTimeCodeEncounteredEvent != null)
@@ -745,19 +741,19 @@ namespace TransportMux
                 MPEGTimeCodeEncounteredEvent(GopTimeCode.ToString());
             }
 
-	        return nextStartCode();
+	        return NextStartCode();
         }
 
-	    bool consumePictureHeader()
+        private bool ConsumePictureHeader()
         {
 	        // picture_start_code				(32 bits)	(32)
-	        readAndBuffer32();
+	        ReadAndBuffer32();
 
 	        // temporal_reference				(10 bits)	(10)	>> 22
 	        // picture_coding_type				(3 bits)	(13)	>> 19
 	        // vbv_delay						(16 bits)	(29)	>> 3
 	        // -- round to 4 bytes (32 bits)
-	        uint temp32 = readAndBuffer32();
+	        uint temp32 = ReadAndBuffer32();
 
 	        TemporalReference = (int)((temp32 >> 22) & 0x3FF);
 	        PictureCodingType = (int)((temp32 >> 19) & 0x7);
@@ -782,7 +778,7 @@ namespace TransportMux
 	        {
 		        bitsRemaining += 8;
 		        temp32 <<= 8;
-		        temp32 += readAndBuffer8();
+		        temp32 += ReadAndBuffer8();
 	        }
 
             uint mask = (uint)(0x1 << (bitsRemaining - 1));
@@ -798,24 +794,24 @@ namespace TransportMux
 		        {
 			        bitsRemaining += 8;
 			        temp32 <<= 8;
-			        temp32 += readAndBuffer8();
+			        temp32 += ReadAndBuffer8();
 		        }
 	        }
 
-	        return nextStartCode();
+	        return NextStartCode();
         }
 
-	    bool consumeSlice()
+        private bool ConsumeSlice()
         {
             long sliceStarts = bufferLength;
 
             // slice_start_code			(32 bits)	(32)
-            readAndBuffer32();            
+            ReadAndBuffer32();            
 
             // There is a lot of information in a slice, however since this is not a decoder, it's not
             // that important to us. So, from this point, we just skip to the next start code
 
-            bool result = nextStartCode();
+            bool result = NextStartCode();
 
             if (QuadByteAlign)
             {
@@ -827,7 +823,7 @@ namespace TransportMux
 
                     while ((sliceLength % 4) != 0)
                     {
-                        append8(0);
+                        Append8(0);
                         sliceLength++;
                     }
                 }
@@ -836,28 +832,28 @@ namespace TransportMux
             return result;
         }
 
-        bool consumeUserData()
+        private bool ConsumeUserData()
         {
             // user_data_start_code    (32 bits) (32)
             // Already consumed from consumeExtensions()
             //readAndBuffer32();
 
-            return nextStartCode();
+            return NextStartCode();
         }
 
-	    bool nextStartCode()
+        private bool NextStartCode()
         {
-	        uint currentStartCode = readAndBuffer24();
+	        uint currentStartCode = ReadAndBuffer24();
 	        while(currentStartCode != 0x00000001)
 	        {
 		        currentStartCode <<= 8;
 		        currentStartCode &= 0x00FFFFFF;
-		        currentStartCode |= (uint) readAndBuffer8();
+		        currentStartCode |= (uint) ReadAndBuffer8();
 	        }
 
 	        if(currentStartCode == 0x00000001)
 	        {
-		        unbuffer(3);                
+		        Unbuffer(3);                
 		        reader.SeekRelative(-3);
 
                 return true;
@@ -866,7 +862,7 @@ namespace TransportMux
 	        return false;
         }
 
-	    double frameRateFromCode(int code)
+        private double FrameRateFromCode(int code)
         {
             switch (code)
             {
@@ -890,7 +886,7 @@ namespace TransportMux
             return 0.0;
         }
 
-	    bool unbuffer(int count)
+        private bool Unbuffer(int count)
 	    {
 		    if(bufferLength > count)
 			    bufferLength -= count;
@@ -898,7 +894,7 @@ namespace TransportMux
 		    return true;
 	    }
 
-    	bool append8(byte value)
+        private bool Append8(byte value)
 	    {
 		    if(bufferLength >= bufferSize)
 		    {
@@ -909,7 +905,7 @@ namespace TransportMux
 		    return true;
 	    }
 
-	    bool append16(ushort value)
+        private bool Append16(ushort value)
 	    {
 		    if((bufferLength + 1) >= bufferSize)
 		    {
@@ -921,7 +917,7 @@ namespace TransportMux
 		    return true;
 	    }
 
-	    bool append24(uint value)
+        private bool Append24(uint value)
 	    {
 		    if((bufferLength + 2) >= bufferSize)
 		    {
@@ -934,7 +930,7 @@ namespace TransportMux
 		    return true;
 	    }
 
-	    bool append32(uint value)
+        private bool Append32(uint value)
 	    {
 		    if((bufferLength + 3) >= bufferSize)
 		    {
@@ -948,50 +944,50 @@ namespace TransportMux
 		    return true;
 	    }
 
-	    byte readAndBuffer8()
+        private byte ReadAndBuffer8()
 	    {
             byte result = reader.ReadByte();
-		    append8(result);
+		    Append8(result);
 		    return result;
 	    }
 
-	    ushort readAndBuffer16()
+        private ushort ReadAndBuffer16()
 	    {
             ushort result = reader.ReadUInt16();
-		    append16(result);
+		    Append16(result);
 		    return result;
 	    }
 
-	    uint readAndBuffer24()
+        private uint ReadAndBuffer24()
 	    {
             uint result = reader.ReadUInt24();
-		    append24(result);
+		    Append24(result);
 		    return result;
 	    }
 
-	    uint readAndBuffer32()
+        private uint ReadAndBuffer32()
 	    {
             uint result = reader.ReadUInt32();
-		    append32(result);
+		    Append32(result);
 		    return result;
 	    }
 
-	    void dumpFrames()
+        private void DumpFrames()
         {
         }
 
-	    void dumpTSPackets()
+        private void DumpTSPackets()
         {
         }
 
-	    ByteArray pesForFrame(int mpegStream, int index, double initialDTS)
+        private ByteArray PesForFrame(int mpegStream, int index, double initialDTS)
         {
             ByteArray result = new ByteArray();
 
 	        MPEGFrame frame = Frames[index];
 
-            result.append((uint) (0x000001E0 + mpegStream));
-            result.append((ushort) 0x0000); // Transport stream PES packets don't need lengths if they're video
+            result.Append((uint) (0x000001E0 + mpegStream));
+            result.Append((ushort) 0x0000); // Transport stream PES packets don't need lengths if they're video
 
 	        // '10'								(2 bits)	02		= 0x80
 	        // PES_scrambling_control = '00'	(2 bits)	04		= 0x00
@@ -1000,7 +996,7 @@ namespace TransportMux
 	        // copyright = '0'					(1 bit)		07		= 0x00
 	        // original_or_copy = '1'			(1 bit)		08		= 0x01
 	        //														= 0x85
-	        result.append((byte) 0x85);
+	        result.Append((byte) 0x85);
 
             if (frame.FrameNumber == 0)
                 VBVDelay = frame.VBVDelay;
@@ -1026,7 +1022,7 @@ namespace TransportMux
 		        // PES_CRC_flag = '0'				(1 bit)		07		= 0x00
 		        // PES_extension_flag				(1 bit)		08		= 0x00
 		        //														= 0x80
-                result.append((byte) 0x80);
+                result.Append((byte) 0x80);
 
 		        // if(PTS_DTS_flags == '10')
 		        //	'0010'							(4 bits)	04		
@@ -1037,17 +1033,17 @@ namespace TransportMux
 		        //  PTS[14..0]						(15 bits)	39
 		        //  marker_bit = '1'				(1 bit)		40
 		        //	PES_header_data_length = 					40 bits or 5 bytes
-                result.append((byte) 5);
+                result.Append((byte) 5);
 
-		        result.enterBitMode();
-		        result.appendBits((byte) 0x2, 3, 0);
-		        result.appendBits(intPts, 32, 30);
-		        result.appendBit(1);
-		        result.appendBits(intPts, 29, 15);
-		        result.appendBit(1);
-		        result.appendBits(intPts, 14, 0);
-		        result.appendBit(1);
-		        result.leaveBitMode();
+		        result.EnterBitMode();
+		        result.AppendBits((byte) 0x2, 3, 0);
+		        result.AppendBits(intPts, 32, 30);
+		        result.AppendBit(1);
+		        result.AppendBits(intPts, 29, 15);
+		        result.AppendBit(1);
+		        result.AppendBits(intPts, 14, 0);
+		        result.AppendBit(1);
+		        result.LeaveBitMode();
 	        }
 	        else
 	        {
@@ -1059,7 +1055,7 @@ namespace TransportMux
 		        // PES_CRC_flag = '0'				(1 bit)		07		= 0x00
 		        // PES_extension_flag				(1 bit)		08		= 0x00
 		        //														= 0xC0
-		        result.append((byte) 0xC0);
+		        result.Append((byte) 0xC0);
 
 		        // if(PTS_DTS_flags == '11')
 		        //	'0011'							(4 bits)	04		
@@ -1077,27 +1073,27 @@ namespace TransportMux
 		        //  DTS[14..0]						(15 bits)	79
 		        //  marker_bit = '1'				(1 bit)		80
 		        //	PES_header_data_length = 					80 bits or 10 bytes
-		        result.append((byte) 10);
-		        result.enterBitMode();
-		        result.appendBits((byte) 0x3, 3, 0);
-		        result.appendBits(intPts, 32, 30);
-		        result.appendBit(1);
-		        result.appendBits(intPts, 29, 15);
-		        result.appendBit(1);
-		        result.appendBits(intPts, 14, 0);
-		        result.appendBit(1);
-		        result.appendBits((byte) 0x1, 3, 0);
-		        result.appendBits(intDts, 32, 30);
-		        result.appendBit(1);
-		        result.appendBits(intDts, 29, 15);
-		        result.appendBit(1);
-		        result.appendBits(intDts, 14, 0);
-		        result.appendBit(1);
-		        result.leaveBitMode();
+		        result.Append((byte) 10);
+		        result.EnterBitMode();
+		        result.AppendBits((byte) 0x3, 3, 0);
+		        result.AppendBits(intPts, 32, 30);
+		        result.AppendBit(1);
+		        result.AppendBits(intPts, 29, 15);
+		        result.AppendBit(1);
+		        result.AppendBits(intPts, 14, 0);
+		        result.AppendBit(1);
+		        result.AppendBits((byte) 0x1, 3, 0);
+		        result.AppendBits(intDts, 32, 30);
+		        result.AppendBit(1);
+		        result.AppendBits(intDts, 29, 15);
+		        result.AppendBit(1);
+		        result.AppendBits(intDts, 14, 0);
+		        result.AppendBit(1);
+		        result.LeaveBitMode();
 	        }
 
 	        // Append the frame data
-	        result.append(buffer, frame.StartIndex, frame.Length);
+	        result.Append(buffer, frame.StartIndex, frame.Length);
 
             // TODO : figure out what the heck the quad-byte alignment thing is in Cablelabs VoD
             /*int pesHeaderSize = 14;     // just pts
@@ -1114,12 +1110,12 @@ namespace TransportMux
 	        return result;
         }
 
-	    void packetize(double initialDTS)
+        private void Packetize(double initialDTS)
         {
         	int added = 0;
             for(int i=0; i<Frames.Count; i++)
             {
-                ByteArray pesData = pesForFrame(0, i, initialDTS);
+                ByteArray pesData = PesForFrame(0, i, initialDTS);
                 byte[] pes = pesData.buffer;
 
                 double time = Frames[i].DTS - AdjustedVBVDelay;
@@ -1214,10 +1210,10 @@ namespace TransportMux
                 {
                     while (inputFile.Position < inputFile.Length && TransportPackets.Count < (1000000 / 188))
                     {
-                        if (!readNextSequence())
+                        if (!ReadNextSequence())
                             return 0xFFFFFFFFFFFFFFFF;
 
-                        packetize(InitialDTS);
+                        Packetize(InitialDTS);
                     }
                 }
 
@@ -1234,7 +1230,7 @@ namespace TransportMux
             {
                 while ((inputFile.Position < inputFile.Length) && TransportPackets.Count < (10000000 / 188))
                 {
-                    if (!readNextSequence())
+                    if (!ReadNextSequence())
                     {
                         if (TransportPackets.Count == 0)
                         {
@@ -1243,14 +1239,14 @@ namespace TransportMux
                         break;
                     }
 
-                    packetize(InitialDTS);
+                    Packetize(InitialDTS);
                 }
             }
 
             TransportPacket result = TransportPackets.TakeFirst();
 
             if (TransportPackets.Count == 0)
-                bufferMore();
+                BufferMore();
 
             return result;
         }
@@ -1266,19 +1262,19 @@ namespace TransportMux
         public override void  GenerateProgramMap(ByteArray Map)
         {
 	        // stream_type = 0x02					(8 bits)
-	        Map.appendBits((byte) 0x02, 7, 0);
+	        Map.AppendBits((byte) 0x02, 7, 0);
 
 	        // reserved = '111b'					(3 bits)
-	        Map.appendBits((byte) 0x7, 2, 0);
+	        Map.AppendBits((byte) 0x7, 2, 0);
 
 	        // elementary_PID						(13 bits)
-	        Map.appendBits(PID, 12, 0);
+	        Map.AppendBits(PID, 12, 0);
 
 	        // reserved = '1111b'					(4 bits)
-	        Map.appendBits((byte) 0xF, 3, 0);
+	        Map.AppendBits((byte) 0xF, 3, 0);
 
 	        // ES_info_length = 0x000				(12 bits)
-	        Map.appendBits((ushort) 0x000, 11, 0);
+	        Map.AppendBits((ushort) 0x000, 11, 0);
         }	    
     }
 }

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TransportMux
 {
+    using System.Collections.Generic;
+
     public class InputStreams
     {
-        List<InputStream> streams = new List<InputStream>();
-        int NextStream = 0;
+        private List<InputStream> streams = new List<InputStream>();
+        private int NextStream = 0;
 
         public InputStream this[long index]
         {
@@ -17,7 +15,7 @@ namespace TransportMux
             }
         }
 
-        public InputStream pcrStream
+        public InputStream PcrStream
         {
             get
             {

@@ -7,7 +7,7 @@ namespace DVBToolsCommon.VideoDecoders
 {
     public class MPEG2Decoder
     {
-        const int MPEG2WriteBufferLength = 1024 * 1024;
+        private const int MPEG2WriteBufferLength = 1024 * 1024;
 
         private String m_outputFileName = "";
         protected int m_streamId = 0;
@@ -15,27 +15,24 @@ namespace DVBToolsCommon.VideoDecoders
         protected BinaryWriter m_outputStream;
 
         private Byte[] writeBuffer = new Byte[MPEG2WriteBufferLength];
-        int bufferUsed = 0;
-
-        int picturesInSequence = 0;
-        int slicesInSequence = 0;
-
-        MPEG.SequenceHeader sequenceHeader = new MPEG.SequenceHeader();
-        MPEG.PictureHeader pictureHeader = new MPEG.PictureHeader();
-        MPEG.Slice slice = new MPEG.Slice();
-
-        MPEG.GroupOfPicturesHeader groupOfPicturesHeader = new MPEG.GroupOfPicturesHeader();
-        MPEG.SequenceExtension sequenceExtension = new MPEG.SequenceExtension();
-        MPEG.SequenceDisplayExtension sequenceDisplayExtension = new MPEG.SequenceDisplayExtension();
-        MPEG.PictureCodingExtension pictureCodingExtension = new MPEG.PictureCodingExtension();
-        MPEG.SequenceScalableExtension sequenceScalableExtension = new MPEG.SequenceScalableExtension();
+        private int bufferUsed = 0;
+        private int picturesInSequence = 0;
+        private int slicesInSequence = 0;
+        private MPEG.SequenceHeader sequenceHeader = new MPEG.SequenceHeader();
+        private MPEG.PictureHeader pictureHeader = new MPEG.PictureHeader();
+        private MPEG.Slice slice = new MPEG.Slice();
+        private MPEG.GroupOfPicturesHeader groupOfPicturesHeader = new MPEG.GroupOfPicturesHeader();
+        private MPEG.SequenceExtension sequenceExtension = new MPEG.SequenceExtension();
+        private MPEG.SequenceDisplayExtension sequenceDisplayExtension = new MPEG.SequenceDisplayExtension();
+        private MPEG.PictureCodingExtension pictureCodingExtension = new MPEG.PictureCodingExtension();
+        private MPEG.SequenceScalableExtension sequenceScalableExtension = new MPEG.SequenceScalableExtension();
 
         // This is calculated during header and extension decoding, it is calculated using 
         //  bits 13..12 = SequenceExtension.horizontalSizeExtension
         //  bits 11..0 = SequenceHeader.horizontalSizeValue
-        int mpegPictureHeight;
+        private int mpegPictureHeight;
 
-        void resetPresenceFlags()
+        private void resetPresenceFlags()
         {
             sequenceExtension.Present = false;
             sequenceDisplayExtension.Present = false;
@@ -132,7 +129,7 @@ namespace DVBToolsCommon.VideoDecoders
             return true;
         }
 
-        int nextStartCode(byte [] buffer, int startIndex, int length)
+        private int nextStartCode(byte [] buffer, int startIndex, int length)
         {
             int index = startIndex;
 
@@ -150,7 +147,7 @@ namespace DVBToolsCommon.VideoDecoders
             return -1;
         }
 
-        int nextStartCode(int startIndex)
+        private int nextStartCode(int startIndex)
         {            
             return nextStartCode(writeBuffer, startIndex, bufferUsed);
         }

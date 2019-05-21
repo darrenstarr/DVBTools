@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public class ISO639Table
     {
         public static string V1toV2(string v1)

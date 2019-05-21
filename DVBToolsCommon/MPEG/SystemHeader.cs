@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace DVBToolsCommon.MPEG
-{   
+{
     // Table 2-34 – Program Stream system header
     //Syntax                                          No. of bits     Mnemonic
     //system_header () {
@@ -28,7 +28,7 @@ namespace DVBToolsCommon.MPEG
     //        P-STD_buffer_size_bound                 13              uimsbf
     //    }
     //}
-    class SystemHeader : VideoComponent
+    internal class SystemHeader : VideoComponent
     {
         public ushort headerLength;
         public uint rateBound;
