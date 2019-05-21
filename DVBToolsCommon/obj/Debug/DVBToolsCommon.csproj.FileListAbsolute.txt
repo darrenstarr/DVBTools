@@ -1,0 +1,5 @@
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommon\bin\Debug\DVBToolsCommon.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommon\bin\Debug\DVBToolsCommon.pdb
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommon\obj\Debug\DVBToolsCommon.csproj.CoreCompileInputs.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommon\obj\Debug\DVBToolsCommon.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommon\obj\Debug\DVBToolsCommon.pdb

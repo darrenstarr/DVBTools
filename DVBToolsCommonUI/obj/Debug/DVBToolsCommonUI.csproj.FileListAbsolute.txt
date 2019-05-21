@@ -1,0 +1,11 @@
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\bin\Debug\DVBToolsCommonUI.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\bin\Debug\DVBToolsCommonUI.pdb
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\bin\Debug\DVBToolsCommon.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\bin\Debug\DVBToolsCommon.pdb
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.csprojAssemblyReference.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.SelectLanguageDialog.resources
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.csproj.GenerateResource.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.csproj.CoreCompileInputs.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.csproj.CopyComplete
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\DVBToolsCommonUI\obj\Debug\DVBToolsCommonUI.pdb

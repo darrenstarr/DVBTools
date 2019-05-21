@@ -1,0 +1,9 @@
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\bin\Debug\TransportMux.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\bin\Debug\TransportMux.pdb
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\bin\Debug\DVBToolsCommon.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\bin\Debug\DVBToolsCommon.pdb
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\obj\Debug\TransportMux.csprojAssemblyReference.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\obj\Debug\TransportMux.csproj.CoreCompileInputs.cache
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\obj\Debug\TransportMux.csproj.CopyComplete
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\obj\Debug\TransportMux.dll
+C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\TransportMux\obj\Debug\TransportMux.pdb
