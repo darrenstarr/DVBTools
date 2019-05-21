@@ -259,3 +259,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+.vs/DVBToolsForWindows/v16/Server/sqlite3/storage.ide
+.vs/DVBToolsForWindows/v16/.suo
+.vs/DVBToolsForWindows/v16/Server/sqlite3/db.lock
