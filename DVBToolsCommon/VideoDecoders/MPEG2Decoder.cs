@@ -1,20 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
 namespace DVBToolsCommon.VideoDecoders
 {
+    using System;
+    using System.IO;
+
     public class MPEG2Decoder
     {
         private const int MPEG2WriteBufferLength = 1024 * 1024;
 
-        private String m_outputFileName = "";
+        private string m_outputFileName = "";
         protected int m_streamId = 0;
         protected FileStream m_outputFile;
         protected BinaryWriter m_outputStream;
 
-        private Byte[] writeBuffer = new Byte[MPEG2WriteBufferLength];
+        private byte[] writeBuffer = new byte[MPEG2WriteBufferLength];
         private int bufferUsed = 0;
         private int picturesInSequence = 0;
         private int slicesInSequence = 0;
@@ -46,10 +44,10 @@ namespace DVBToolsCommon.VideoDecoders
 
         ~MPEG2Decoder()
         {
-            close();
+            Close();
         }
 
-        virtual public String OutputFileName
+        virtual public string OutputFileName
         {
             get
             {
@@ -85,17 +83,17 @@ namespace DVBToolsCommon.VideoDecoders
             int index = 0;
             while ((index + 4) < buffer.Length)
             {
-                index = nextStartCode(buffer, index, buffer.Length);
+                index = NextStartCode(buffer, index, buffer.Length);
                 if (index == -1)
                     break;
-//                    throw new Exception("Could not locate a sequence header in the first 512KB of the file");
+                //                    throw new Exception("Could not locate a sequence header in the first 512KB of the file");
 
-                UInt32 startCode = read32(buffer, index);
+                uint startCode = Read32(buffer, index);
                 index += 4;
                 switch (startCode)
                 {
                     case MPEG.StartCodeFull.SequenceHeader:
-                        int count = sequenceHeader.load(buffer, index - 4, buffer.Length - index + 4);
+                        int count = sequenceHeader.Load(buffer, index - 4, buffer.Length - index + 4);
                         if (count != 0)
                         {
                             //System.Diagnostics.Debug.WriteLine(sequenceHeader.bitRateValue.ToString());
@@ -110,7 +108,7 @@ namespace DVBToolsCommon.VideoDecoders
             return bitRate * 400;
         }
 
-        public virtual bool open()
+        public virtual bool Open()
         {
             FileInfo fi = new FileInfo(OutputFileName);
             if (fi.Exists)
@@ -123,13 +121,13 @@ namespace DVBToolsCommon.VideoDecoders
             }
             catch
             {
-                close();
+                Close();
                 return false;
             }
             return true;
         }
 
-        private int nextStartCode(byte [] buffer, int startIndex, int length)
+        private int NextStartCode(byte [] buffer, int startIndex, int length)
         {
             int index = startIndex;
 
@@ -147,17 +145,17 @@ namespace DVBToolsCommon.VideoDecoders
             return -1;
         }
 
-        private int nextStartCode(int startIndex)
+        private int NextStartCode(int startIndex)
         {            
-            return nextStartCode(writeBuffer, startIndex, bufferUsed);
+            return NextStartCode(writeBuffer, startIndex, bufferUsed);
         }
 
-        public void close()
+        public void Close()
         {
             if (m_outputFile == null)
                 return;
 
-            processBuffer();
+            ProcessBuffer();
             m_outputStream.Write(writeBuffer, 0, bufferUsed);
 
             m_outputStream.Close();
@@ -167,13 +165,13 @@ namespace DVBToolsCommon.VideoDecoders
             m_outputFile = null;
         }
 
-        private void processBuffer()
+        private void ProcessBuffer()
         {
             int index = 0;
 
             while (index < bufferUsed)
             {
-                int newIndex = nextStartCode(index);
+                int newIndex = NextStartCode(index);
                 if (newIndex == -1)
                 {
                     if (index == 0)
@@ -191,13 +189,13 @@ namespace DVBToolsCommon.VideoDecoders
 
                 index = newIndex;
 
-                UInt32 startCode = read32(index);
+                uint startCode = Read32(index);
                 index += 4;
                 int count;
                 switch (startCode)
                 {
                     case MPEG.StartCodeFull.SequenceHeader:
-                        count = sequenceHeader.load(writeBuffer, index - 4, bufferUsed);
+                        count = sequenceHeader.Load(writeBuffer, index - 4, bufferUsed);
                         //System.Diagnostics.Debug.WriteLine("Sequence Start Code at 0x" + String.Format("{0:X8}", m_outputFile.Position + index - 4) + ", pictures = " + picturesInSequence.ToString() + ", slices " + slicesInSequence.ToString());
                         if (count != 0)
                         {
@@ -214,18 +212,18 @@ namespace DVBToolsCommon.VideoDecoders
                         switch (writeBuffer[index] >> 4)
                         {
                             case MPEG.ExtensionStartCode.Sequence:
-                                count = sequenceExtension.load(writeBuffer, index - 4, bufferUsed);
+                                count = sequenceExtension.Load(writeBuffer, index - 4, bufferUsed);
                                 if(count > 0)
                                     mpegPictureHeight |= sequenceExtension.verticalSizeExtension << 12;
                                 break;
                             case MPEG.ExtensionStartCode.SequenceDisplay:
-                                count = sequenceDisplayExtension.load(writeBuffer, index - 4, bufferUsed);
+                                count = sequenceDisplayExtension.Load(writeBuffer, index - 4, bufferUsed);
                                 break;
                             case MPEG.ExtensionStartCode.PictureCoding:
-                                count = pictureCodingExtension.load(writeBuffer, index - 4, bufferUsed);
+                                count = pictureCodingExtension.Load(writeBuffer, index - 4, bufferUsed);
                                 break;
                             case MPEG.ExtensionStartCode.SequenceScalable:
-                                count = sequenceScalableExtension.load(writeBuffer, index - 4, bufferUsed);
+                                count = sequenceScalableExtension.Load(writeBuffer, index - 4, bufferUsed);
                                 break;
                             default:
                                 count = 0;
@@ -237,7 +235,7 @@ namespace DVBToolsCommon.VideoDecoders
                         break;
 
                     case MPEG.StartCodeFull.Picture:
-                        count = pictureHeader.load(writeBuffer, index - 4, bufferUsed);
+                        count = pictureHeader.Load(writeBuffer, index - 4, bufferUsed);
                         if (count > 0)
                         {
                             index += count - 4;
@@ -246,7 +244,7 @@ namespace DVBToolsCommon.VideoDecoders
                         break;
 
                     case MPEG.StartCodeFull.Group:
-                        count = groupOfPicturesHeader.load(writeBuffer, index - 4, bufferUsed);
+                        count = groupOfPicturesHeader.Load(writeBuffer, index - 4, bufferUsed);
                         if(count > 0)
                             index += count - 4;
 
@@ -254,7 +252,7 @@ namespace DVBToolsCommon.VideoDecoders
                     default:
                         if (startCode >= MPEG.StartCodeFull.FirstSlice && startCode <= MPEG.StartCodeFull.LastSlice)
                         {
-                            count = slice.load(mpegPictureHeight, sequenceScalableExtension.Present, 0, writeBuffer, index - 4, bufferUsed);
+                            count = slice.Load(mpegPictureHeight, sequenceScalableExtension.Present, 0, writeBuffer, index - 4, bufferUsed);
                             if (count > 0)
                             {
                                 index += count - 4;
@@ -267,10 +265,10 @@ namespace DVBToolsCommon.VideoDecoders
             }
         }
 
-        public virtual void consume(Byte[] packet, int packetStart, int packetLength)
+        public virtual void Consume(byte[] packet, int packetStart, int packetLength)
         {
             if (bufferUsed + packetLength > MPEG2WriteBufferLength)
-                processBuffer();
+                ProcessBuffer();
 
             if (bufferUsed + packetLength > MPEG2WriteBufferLength)
                 throw new Exception("Can not process video buffer, errors exist");
@@ -280,24 +278,24 @@ namespace DVBToolsCommon.VideoDecoders
                 writeBuffer[bufferUsed++] = packet[packetStart++];
         }
 
-        private UInt16 read16(int index)
+        private ushort Read16(int index)
         {
-            return (UInt16)((((UInt16)writeBuffer[index]) << 8) | ((UInt16)writeBuffer[index + 1]));
+            return (ushort)((((ushort)writeBuffer[index]) << 8) | ((ushort)writeBuffer[index + 1]));
         }
 
-        private UInt32 read32(int index)
+        private uint Read32(int index)
         {
-            return (((UInt32)writeBuffer[index + 0]) << 24) | (((UInt32)writeBuffer[index + 1]) << 16) | (((UInt32)writeBuffer[index + 2]) << 8) | ((UInt32)writeBuffer[index + 3]);
+            return (((uint)writeBuffer[index + 0]) << 24) | (((uint)writeBuffer[index + 1]) << 16) | (((uint)writeBuffer[index + 2]) << 8) | ((uint)writeBuffer[index + 3]);
         }
 
-        protected UInt16 read16(Byte[] buffer, int index)
+        protected ushort Read16(byte[] buffer, int index)
         {
-            return (UInt16)((((UInt16)buffer[index]) << 8) | ((UInt16)buffer[index + 1]));
+            return (ushort)((((ushort)buffer[index]) << 8) | ((ushort)buffer[index + 1]));
         }
 
-        protected UInt32 read32(Byte[] buffer, int index)
+        protected uint Read32(byte[] buffer, int index)
         {
-            return (((UInt32)buffer[index + 0]) << 24) | (((UInt32)buffer[index + 1]) << 16) | (((UInt32)buffer[index + 2]) << 8) | ((UInt32)buffer[index + 3]);
+            return (((uint)buffer[index + 0]) << 24) | (((uint)buffer[index + 1]) << 16) | (((uint)buffer[index + 2]) << 8) | ((uint)buffer[index + 3]);
         }
     }
 }

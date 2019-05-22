@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.2.1 Sequence header
@@ -42,7 +38,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 15 bytes are available for processing then the header and following start code
             // can't be read.
@@ -51,12 +47,12 @@ namespace DVBToolsCommon.MPEG
 
             int index = startIndex;
 
-            horizontalSizeValue = read16(buffer, index + 4) >> 4;
-            verticalSizeValue = read16(buffer, index + 5) & 0x0FFF;
+            horizontalSizeValue = Read16(buffer, index + 4) >> 4;
+            verticalSizeValue = Read16(buffer, index + 5) & 0x0FFF;
             aspectRatioInformation = buffer[index + 7] >> 4;
             frameRateCode = buffer[index + 7] & 0x0F;
-            bitRateValue = (int)(read32(buffer, index + 8) >> 14);
-            vbvBufferSizeValue = (read16(buffer, index + 10) & 0x1FF8) >> 3;
+            bitRateValue = (int)(Read32(buffer, index + 8) >> 14);
+            vbvBufferSizeValue = (Read16(buffer, index + 10) & 0x1FF8) >> 3;
             constrainedParametersFlag = (buffer[index + 11] & 0x04) >> 2;
             loadIntraQuantiserMatrix = (buffer[index + 11] & 0x02) >> 1;
 
@@ -89,7 +85,7 @@ namespace DVBToolsCommon.MPEG
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

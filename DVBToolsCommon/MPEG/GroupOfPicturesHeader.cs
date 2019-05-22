@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.2.6 Group of pictures header
@@ -29,7 +25,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 11 bytes are available for processing then the header and following start code
             // can't be read.
@@ -40,15 +36,15 @@ namespace DVBToolsCommon.MPEG
 
             timeCode.dropFrameFlag = buffer[index] >> 7;
             timeCode.hours = (buffer[index] & 0x7C) >> 2;
-            timeCode.minutes = (read16(buffer, index++) & 0x3F0) >> 4;
-            timeCode.seconds = (read16(buffer, index++) & 0x07E0) >> 5;
-            timeCode.pictures = (read16(buffer, index++) & 0x1F80) >> 7;
+            timeCode.minutes = (Read16(buffer, index++) & 0x3F0) >> 4;
+            timeCode.seconds = (Read16(buffer, index++) & 0x07E0) >> 5;
+            timeCode.pictures = (Read16(buffer, index++) & 0x1F80) >> 7;
             closedGOP = (buffer[index] & 0x40) >> 6;
             brokenLink = (buffer[index++] & 0x20) >> 5;
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

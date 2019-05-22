@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.2.5 Sequence scalable extension
@@ -56,7 +52,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 10 bytes are available for processing then the header and following start code
             // can't be read.
@@ -67,19 +63,19 @@ namespace DVBToolsCommon.MPEG
 
             extensionStartCodeIdentifier = buffer[index] >> 4;
             scalableMode = (ScalableMode)((buffer[index++] & 0xC0) >> 2);
-            layerId = (read16(buffer, index++) & 0x03C0) >> 6;
+            layerId = (Read16(buffer, index++) & 0x03C0) >> 6;
 
             if (scalableMode == ScalableMode.SpatialScalability)
             {
                 if ((bufferLength - startIndex) < 15)
                     return 0;
 
-                lowerLayerPredictionHorizontalSize = read16(buffer, index += 2) & 0x3FFF;
-                lowerLayerPredictionVerticalSize = (read16(buffer, index++) & 0x7FFE) >> 1;
-                horizontalSubsamplingFactorM = (read16(buffer, index++) & 0x01F0) >> 4;
-                horizontalSubsamplingFactorN = (read16(buffer, index++) & 0x0F80) >> 7;
+                lowerLayerPredictionHorizontalSize = Read16(buffer, index += 2) & 0x3FFF;
+                lowerLayerPredictionVerticalSize = (Read16(buffer, index++) & 0x7FFE) >> 1;
+                horizontalSubsamplingFactorM = (Read16(buffer, index++) & 0x01F0) >> 4;
+                horizontalSubsamplingFactorN = (Read16(buffer, index++) & 0x0F80) >> 7;
                 verticalSubsamplingFactorM = (buffer[index] & 0x7C) >> 6;
-                verticalSubsamplingFactorN = (read16(buffer, index) & 0x03E0) >> 5;
+                verticalSubsamplingFactorN = (Read16(buffer, index) & 0x03E0) >> 5;
             }
             if (scalableMode == ScalableMode.TemporalScalability)
             {
@@ -88,12 +84,12 @@ namespace DVBToolsCommon.MPEG
                 {
                     muxToProgressiveSequence = (buffer[index] & 0x10) >> 4;
                     pictureMuxOrder = (buffer[index] & 0x0E) >> 1;
-                    pictureMuxFactor = (read16(buffer, index) & 0x01C0) >> 6;
+                    pictureMuxFactor = (Read16(buffer, index) & 0x01C0) >> 6;
                 }
                 else
                 {
                     pictureMuxOrder = (buffer[index] & 0x1C) >> 2;
-                    pictureMuxFactor = (read16(buffer, index) & 0x0380) >> 7;
+                    pictureMuxFactor = (Read16(buffer, index) & 0x0380) >> 7;
                 }
             }
 
@@ -101,7 +97,7 @@ namespace DVBToolsCommon.MPEG
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

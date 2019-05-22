@@ -325,7 +325,7 @@ namespace TransportMux
         {
             string result = "";
             for (int i = 0; i < 4; i++)
-                result += (Char)ReadByte();
+                result += (char)ReadByte();
             return result;
         }
     }

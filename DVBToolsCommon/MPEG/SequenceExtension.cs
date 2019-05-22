@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.2.3 Sequence extension
@@ -48,7 +44,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 14 bytes are available for processing then the header and following start code
             // can't be read.
@@ -58,12 +54,12 @@ namespace DVBToolsCommon.MPEG
             int index = startIndex;
 
             extensionStartCodeIdentifier = buffer[index + 4] >> 4;
-            profileAndLevelIndication = (read16(buffer, index + 4) & 0x0FF0) >> 4;
+            profileAndLevelIndication = (Read16(buffer, index + 4) & 0x0FF0) >> 4;
             progressiveSequence = (buffer[index + 5] & 0x08) >> 3;
             chromaFormat = (ChromaFormat)((buffer[index + 5] & 0x06) >> 1);
-            horizontalSizeExtension = (read16(buffer, index + 5) & 0x0180) >> 7;
+            horizontalSizeExtension = (Read16(buffer, index + 5) & 0x0180) >> 7;
             verticalSizeExtension = (buffer[index + 6] & 0x60) >> 5;
-            bitRateExtension = read16(buffer, index + 6) >> 1;
+            bitRateExtension = Read16(buffer, index + 6) >> 1;
             vbvBufferSizeExtension = buffer[index + 8];
             lowDelay = buffer[index + 9] >> 7;
             frameRateExtensionN = (buffer[index + 9] & 0x60) >> 5;
@@ -73,7 +69,7 @@ namespace DVBToolsCommon.MPEG
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

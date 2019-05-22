@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.3.2 Quant matrix extension
@@ -48,7 +44,7 @@ namespace DVBToolsCommon.MPEG
         /// <todo>
         /// See if it's logical to implement a function for quantiser matrix loading
         /// </todo>
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 9 bytes are available for processing then the header and following start code
             // can't be read.
@@ -118,7 +114,7 @@ namespace DVBToolsCommon.MPEG
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

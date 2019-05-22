@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // Table 2-33 – Program Stream pack header
@@ -31,8 +27,8 @@ namespace DVBToolsCommon.MPEG
     //}
     internal class PackHeader : VideoComponent
     {
-        public UInt64 systemClockReferenceBase;
-        public UInt64 systemClockReferenceExtension;
+        public ulong systemClockReferenceBase;
+        public ulong systemClockReferenceExtension;
         public uint programMuxRate;
         public int packStuffingLength;
         public bool isMpeg2;
@@ -51,11 +47,11 @@ namespace DVBToolsCommon.MPEG
         /// <todo>
         /// Implement MPEG-1 maybe
         /// </todo>
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             int index = startIndex + 4;
 
-            UInt64 temp = buffer[index++];
+            ulong temp = buffer[index++];
             isMpeg2 = (temp & 0x40) == 0x40 ? true : false;
 
             systemClockReferenceBase = (temp & 0x38) << 27;

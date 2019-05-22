@@ -29,12 +29,12 @@ namespace MultiplexerUI
         private void InitializeComponent()
         {
             this.streamListView = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label1 = new System.Windows.Forms.Label();
             this.addStreamButton = new System.Windows.Forms.Button();
             this.setLanguageButton = new System.Windows.Forms.Button();
@@ -74,7 +74,7 @@ namespace MultiplexerUI
             this.streamListView.TabIndex = 0;
             this.streamListView.UseCompatibleStateImageBehavior = false;
             this.streamListView.View = System.Windows.Forms.View.Details;
-            this.streamListView.SelectedIndexChanged += new System.EventHandler(this.streamListView_SelectedIndexChanged);
+            this.streamListView.SelectedIndexChanged += new System.EventHandler(this.StreamListView_SelectedIndexChanged);
             // 
             // columnHeader1
             // 
@@ -123,7 +123,7 @@ namespace MultiplexerUI
             this.addStreamButton.TabIndex = 2;
             this.addStreamButton.Text = "&Add";
             this.addStreamButton.UseVisualStyleBackColor = true;
-            this.addStreamButton.Click += new System.EventHandler(this.addStreamButton_Click);
+            this.addStreamButton.Click += new System.EventHandler(this.AddStreamButton_Click);
             // 
             // setLanguageButton
             // 
@@ -134,7 +134,7 @@ namespace MultiplexerUI
             this.setLanguageButton.TabIndex = 3;
             this.setLanguageButton.Text = "Set &Language";
             this.setLanguageButton.UseVisualStyleBackColor = true;
-            this.setLanguageButton.Click += new System.EventHandler(this.setLanguageButton_Click);
+            this.setLanguageButton.Click += new System.EventHandler(this.SetLanguageButton_Click);
             // 
             // goButton
             // 
@@ -144,7 +144,7 @@ namespace MultiplexerUI
             this.goButton.TabIndex = 4;
             this.goButton.Text = "&Go";
             this.goButton.UseVisualStyleBackColor = true;
-            this.goButton.Click += new System.EventHandler(this.goButton_Click);
+            this.goButton.Click += new System.EventHandler(this.GoButton_Click);
             // 
             // deleteButton
             // 
@@ -155,7 +155,7 @@ namespace MultiplexerUI
             this.deleteButton.TabIndex = 5;
             this.deleteButton.Text = "&Delete";
             this.deleteButton.UseVisualStyleBackColor = true;
-            this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
+            this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
             // label2
             // 
@@ -181,7 +181,7 @@ namespace MultiplexerUI
             this.selectOutputFileButton.TabIndex = 8;
             this.selectOutputFileButton.Text = "...";
             this.selectOutputFileButton.UseVisualStyleBackColor = true;
-            this.selectOutputFileButton.Click += new System.EventHandler(this.selectOutputFileButton_Click);
+            this.selectOutputFileButton.Click += new System.EventHandler(this.SelectOutputFileButton_Click);
             // 
             // multiplexerProgress
             // 
@@ -199,7 +199,7 @@ namespace MultiplexerUI
             this.enableEndAfter.TabIndex = 10;
             this.enableEndAfter.Text = "End after :";
             this.enableEndAfter.UseVisualStyleBackColor = true;
-            this.enableEndAfter.CheckedChanged += new System.EventHandler(this.enableEndAfter_CheckedChanged);
+            this.enableEndAfter.CheckedChanged += new System.EventHandler(this.EnableEndAfter_CheckedChanged);
             // 
             // endAfterValue
             // 
@@ -243,7 +243,7 @@ namespace MultiplexerUI
             this.enableForceBitrate.TabIndex = 13;
             this.enableForceBitrate.Text = "Force bitrate :";
             this.enableForceBitrate.UseVisualStyleBackColor = true;
-            this.enableForceBitrate.CheckedChanged += new System.EventHandler(this.enableForceBitrate_CheckedChanged);
+            this.enableForceBitrate.CheckedChanged += new System.EventHandler(this.EnableForceBitrate_CheckedChanged);
             // 
             // forceBitRateValue
             // 
@@ -327,6 +327,7 @@ namespace MultiplexerUI
             this.Controls.Add(this.streamListView);
             this.Name = "StreamSelectionForm";
             this.Text = "StreamSelectionForm";
+            this.Load += new System.EventHandler(this.StreamSelectionForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.endAfterValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.forceBitRateValue)).EndInit();
             this.ResumeLayout(false);

@@ -2,7 +2,6 @@ namespace MultiplexerUI
 {
     using DVBToolsCommon;
     using System;
-    using System.IO;
     using System.Text.RegularExpressions;
     using System.Windows.Forms;
 
@@ -29,7 +28,7 @@ namespace MultiplexerUI
             base.OnClosed(e);
         }
 
-        private StreamListItem findByPID(ushort PID)
+        private StreamListItem FindByPID(ushort PID)
         {
             for (int i = 0; i < streamListView.Items.Count; i++)
             {
@@ -40,15 +39,15 @@ namespace MultiplexerUI
             return null;
         }
 
-        private ushort nextUnusedPID()
+        private ushort NextUnusedPID()
         {
             ushort pid = 0x1E2;
-            while (findByPID(pid) != null)
+            while (FindByPID(pid) != null)
                 pid++;
             return pid;
         }
 
-        private void addStreamButton_Click(object sender, EventArgs e)
+        private void AddStreamButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.Filter = "All Asset Types|*.m2v;*.mpa;*.mpv;*.ac3;*.dvb.idx";
@@ -66,7 +65,7 @@ namespace MultiplexerUI
                     }
                     else
                     {
-                        newItem.PID = nextUnusedPID();
+                        newItem.PID = NextUnusedPID();
                         Regex expresion = new Regex(@"_[a-z][a-z][a-z]_");        // could be a language
                         Match m = expresion.Match(fileDialog.FileNames[i]);
                         if (m != null && m.Success)
@@ -92,7 +91,7 @@ namespace MultiplexerUI
                 forceBitRateValue.Value = displayBitRate;
         }
 
-        private void setLanguageButton_Click(object sender, EventArgs e)
+        private void SetLanguageButton_Click(object sender, EventArgs e)
         {
             if (streamListView.SelectedItems.Count == 0)
             {
@@ -130,7 +129,7 @@ namespace MultiplexerUI
             }
         }
 
-        private void streamListView_SelectedIndexChanged(object sender, EventArgs e)
+        private void StreamListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (streamListView.SelectedItems.Count == 0)
             {
@@ -179,7 +178,7 @@ namespace MultiplexerUI
             MoveDownButton.Enabled = false;
         }
 
-        private void goButton_Click(object sender, EventArgs e)
+        private void GoButton_Click(object sender, EventArgs e)
         {
             multiplexer = new TransportMux.TransportMultiplexer();
             multiplexer.OutputFileName = outputFileName.Text;
@@ -247,7 +246,7 @@ namespace MultiplexerUI
             }
         }
 
-        private void deleteButton_Click(object sender, EventArgs e)
+        private void DeleteButton_Click(object sender, EventArgs e)
         {
             if (streamListView.SelectedItems.Count == 0)
             {
@@ -261,7 +260,7 @@ namespace MultiplexerUI
             deleteButton.Enabled = false;
         }
 
-        private void selectOutputFileButton_Click(object sender, EventArgs e)
+        private void SelectOutputFileButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = "Transport Stream (*.ts)|*.ts";
@@ -269,7 +268,7 @@ namespace MultiplexerUI
                 outputFileName.Text = dialog.FileName;
         }
 
-        private void enableEndAfter_CheckedChanged(object sender, EventArgs e)
+        private void EnableEndAfter_CheckedChanged(object sender, EventArgs e)
         {
             if (enableEndAfter.Checked)
             {
@@ -283,7 +282,7 @@ namespace MultiplexerUI
             }
         }
 
-        private void enableForceBitrate_CheckedChanged(object sender, EventArgs e)
+        private void EnableForceBitrate_CheckedChanged(object sender, EventArgs e)
         {
             if (enableForceBitrate.Checked)
                 forceBitRateValue.Enabled = true;
@@ -400,225 +399,10 @@ namespace MultiplexerUI
                 item.StreamDelay = oldValue;
             }
         }
-    }
 
-    internal class StreamListItem : ListViewItem
-    {
-        public enum StreamTypes
+        private void StreamSelectionForm_Load(object sender, EventArgs e)
         {
-            Undefined,
-            MPEG2Video,
-            MPEG1LayerIIAudio,
-            AC3Audio,
-            DVBSubtitle
-        };
 
-        private StreamTypes streamType = StreamTypes.Undefined;
-        public StreamTypes StreamType
-        {
-            get
-            {
-                return streamType;
-            }
-            set
-            {
-                streamType = value;
-                SubItems[0].Text = streamTypeToString(value);
-            }
-        }
-
-        private ushort pid = 0x000;
-        public ushort PID
-        {
-            get
-            {
-                return pid;
-            }
-            set
-            {
-                pid = value;
-                InputStream.PID = value;
-                SubItems[1].Text = string.Format("0x{0:X3}", value);
-            }
-        }
-
-        private int streamDelay = 0;
-        public int StreamDelay
-        {
-            get
-            {
-                return streamDelay;
-            }
-            set
-            {
-                if(streamType != StreamTypes.MPEG2Video)
-                {
-                    streamDelay = value;
-                    InputStream.streamDelay = (double)value / 1000;
-                    SubItems[5].Text = value.ToString() + "ms";
-                }
-            }
-        }
-
-        private string languageCode = "unk";
-        public string LanguageCode
-        {
-            get
-            {
-                return languageCode;
-            }
-            set
-            {
-                languageCode = value;
-                SubItems[2].Text = ISO639Table.V2ToLanguage(value);
-                switch (streamType)
-                {
-                    case StreamTypes.AC3Audio:
-                        ((TransportMux.AC3Stream)InputStream).LanguageCode = value;
-                        break;
-                    case StreamTypes.MPEG1LayerIIAudio:
-                        ((TransportMux.MPEGAudioStream)InputStream).LanguageCode = value;
-                        break;
-                    case StreamTypes.DVBSubtitle:
-                        ((TransportMux.SubtitleStream)InputStream).LanguageCode = value;
-                        break;
-                }
-            }
-        }
-
-        private uint bitRate = 0;
-        public uint BitRate
-        {
-            get
-            {
-                return bitRate;
-            }
-            set
-            {
-                bitRate = value;
-                SubItems[3].Text = bitRate.ToString();
-            }
-        }
-
-        public string fileName = "";
-        public string FileName
-        {
-            get
-            {
-                return fileName;
-            }
-            set
-            {
-                fileName = value;
-                FileInfo info = new FileInfo(value);
-                SubItems[4].Text = info.Name;
-            }
-        }
-
-        public StreamListItem()
-            : base()
-        {
-            Text = "Undefined";
-            SubItems.Add("0x000");
-            SubItems.Add("Unknown");
-            SubItems.Add("0");
-            SubItems.Add("");
-        }
-
-        private string streamTypeToString(StreamTypes value)
-        {
-            switch (value)
-            {
-                case StreamTypes.MPEG2Video:
-                    return "MPEG-2 Video";
-                case StreamTypes.MPEG1LayerIIAudio:
-                    return "MPEG-1 Layer II Audio";
-                case StreamTypes.AC3Audio:
-                    return "Dolby AC-3 Audio";
-                case StreamTypes.DVBSubtitle:
-                    return "DVB Subtitle";
-            }
-            return "Undefined";
-        }
-
-        private StreamTypes fileNameToType(string fileName)
-        {
-            FileInfo info = new FileInfo(fileName);
-            if (!info.Exists)
-                throw new Exception("Specified file does not exist");
-
-            string extension = info.Extension.ToLower();
-            switch (extension)
-            {
-                case ".m2v":
-                case ".mpv":
-                    return StreamTypes.MPEG2Video;
-                case ".ac3":
-                    return StreamTypes.AC3Audio;
-                case ".mpa":
-                    return StreamTypes.MPEG1LayerIIAudio;
-                case ".idx":
-                    return StreamTypes.DVBSubtitle;
-            }
-            return StreamTypes.Undefined;
-        }
-
-        public TransportMux.InputStream InputStream = null;
-
-        private uint detectMPEGBitRate(string fileName)
-        {
-            DVBToolsCommon.VideoDecoders.MPEG2Decoder decoder = new DVBToolsCommon.VideoDecoders.MPEG2Decoder();
-            return decoder.DetectBitrate(fileName);
-        }
-
-        public StreamListItem(string fileName)
-            : base()
-        {
-            streamType = fileNameToType(fileName);
-            Text = streamTypeToString(streamType);
-
-            TransportMux.AC3Stream ac3Stream = null;
-            TransportMux.MPEG2VideoStream mpeg2VideoStream = null;
-            TransportMux.SubtitleStream subtitleStream = null;
-            TransportMux.MPEGAudioStream mpegAudioStream = null;
-
-            switch (streamType)
-            {
-                case StreamTypes.AC3Audio:
-                    ac3Stream = new TransportMux.AC3Stream(fileName);
-                    InputStream = ac3Stream;
-                    bitRate = ac3Stream.BitRate * 1000;
-                    break;
-                case StreamTypes.MPEG2Video:
-                    mpeg2VideoStream = new TransportMux.MPEG2VideoStream(fileName);
-                    InputStream = mpeg2VideoStream;
-                    bitRate = detectMPEGBitRate(fileName);
-                    break;
-                case StreamTypes.MPEG1LayerIIAudio:
-                    mpegAudioStream = new TransportMux.MPEGAudioStream(fileName);
-                    InputStream = mpegAudioStream;
-                    bitRate = (uint)mpegAudioStream.BitRate * 1000;
-                    break;
-                case StreamTypes.DVBSubtitle:
-                    subtitleStream = new TransportMux.SubtitleStream(fileName);
-                    InputStream = subtitleStream;
-                    bitRate = 192000;
-                    break;
-                case StreamTypes.Undefined:
-                    throw new Exception("unknown stream type encountered");
-            }
-
-            SubItems.Add("0x000");
-            SubItems.Add("Unknown");
-            SubItems.Add(bitRate.ToString());
-            SubItems.Add("");
-
-            if (streamType == StreamTypes.MPEG2Video)
-                SubItems.Add("");
-            else
-                SubItems.Add("0ms");
-
-            FileName = fileName;
         }
     }
 }

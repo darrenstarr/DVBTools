@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.3.1 Picture coding extension
@@ -92,7 +88,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 14 bytes are available for processing then the header and following start code
             // can't be read.
@@ -125,15 +121,15 @@ namespace DVBToolsCommon.MPEG
                 vAxis = (buffer[index] & 0x20) >> 5;
                 fieldSequence = (buffer[index] & 0x1C) >> 2;
                 subCarrier = (buffer[index] & 0x02) >> 1;
-                burstAmplitude = (read16(buffer, index) & 0x1FC) >> 2;
+                burstAmplitude = (Read16(buffer, index) & 0x1FC) >> 2;
                 index++;
-                subCarrierPhase = (read16(buffer, index) & 0x3FC) >> 2;
+                subCarrierPhase = (Read16(buffer, index) & 0x3FC) >> 2;
             }
             index++;
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

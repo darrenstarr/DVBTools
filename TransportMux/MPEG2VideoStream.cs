@@ -139,6 +139,8 @@ namespace TransportMux
         private bool firstPacket = true;
         private int pictureVBVDelay = 0;
 
+        public bool SequenceExtensionPresent = false;
+
         private void BufferMore()
         {
             if (TransportPackets.Count == 0)
@@ -221,7 +223,8 @@ namespace TransportMux
 	        bufferLength = 0;
             Frames.Clear();
 
-	        SequenceFrames = 0;
+            SequenceExtensionPresent = false;
+            SequenceFrames = 0;
 	        SequenceStartFrame = CurrentFrame;
         	
 	        if(!FindNextSequenceStart())
@@ -427,6 +430,8 @@ namespace TransportMux
 
         private bool ConsumeSequenceExtension(byte previousByte)
         {
+            SequenceExtensionPresent = true;
+
 	        // extension_start_code_identifier			(4 bits)	04
 	        // top nibble of extension_start_code		(4 bits)	08
 	        Append8(previousByte);
@@ -1261,11 +1266,24 @@ namespace TransportMux
 
         public override void  GenerateProgramMap(ByteArray Map)
         {
-	        // stream_type = 0x02					(8 bits)
-	        Map.AppendBits((byte) 0x02, 7, 0);
+            // ISO13818-2 section 6.3.1 states
+            // If the first sequence_header() of the sequence is not followed by sequence_extension(), then the stream
+            // shall conform to ISO/ IEC 11172 - 2 and is not documented within this Specification.
+            if (SequenceExtensionPresent)
+            {
+                // ISO13818-1 table 2-29 "ITU-T Rec. H.262 | ISO/IEC 13818-2 Video or ISO/IEC 11172-2 constrained parameter video stream" = 0x02
+                // stream_type = 0x02					(8 bits)
+                Map.AppendBits((byte)0x02, 7, 0);
+            }
+            else
+            {
+                // ISO13818-1 table 2-29 "ISO/IEC 11172 Video" = 0x01
+                // stream_type = 0x01					(8 bits)
+                Map.AppendBits((byte)0x01, 7, 0);
+            }
 
-	        // reserved = '111b'					(3 bits)
-	        Map.AppendBits((byte) 0x7, 2, 0);
+            // reserved = '111b'					(3 bits)
+            Map.AppendBits((byte) 0x7, 2, 0);
 
 	        // elementary_PID						(13 bits)
 	        Map.AppendBits(PID, 12, 0);

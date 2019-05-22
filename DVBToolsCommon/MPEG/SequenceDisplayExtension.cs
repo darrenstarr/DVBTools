@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.2.4 Sequence display extension
@@ -79,7 +75,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 14 bytes are available for processing then the header and following start code
             // can't be read.
@@ -100,12 +96,12 @@ namespace DVBToolsCommon.MPEG
                 matrixCoefficients = (MatrixCoefficients)(buffer[index++]);
             }
 
-            displayHorizontalSize = read16(buffer, index++) >> 2;
-            displayVerticalSize = (read16(buffer, index += 2) & 0x1FFE) >> 1;
+            displayHorizontalSize = Read16(buffer, index++) >> 2;
+            displayVerticalSize = (Read16(buffer, index += 2) & 0x1FFE) >> 1;
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

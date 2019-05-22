@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // 6.2.4 Slice
@@ -42,7 +38,7 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(int verticalSize, bool scalableExtensionPresent, int scalableMode, byte[] buffer, int startIndex, int bufferLength)
+        public int Load(int verticalSize, bool scalableExtensionPresent, int scalableMode, byte[] buffer, int startIndex, int bufferLength)
         {
             // If less than 14 bytes are available for processing then the header and following start code
             // can't be read. In the case of slice, I just guessed that there would never be a slice less than
@@ -53,7 +49,7 @@ namespace DVBToolsCommon.MPEG
             int index = startIndex + 4;
 
             int bitOffset = 0;
-            UInt32 value = read32(buffer, index);
+            uint value = Read32(buffer, index);
 
             if (verticalSize > 2800)
             {
@@ -65,13 +61,13 @@ namespace DVBToolsCommon.MPEG
             {
                 if (scalableMode == (int)SequenceScalableExtension.ScalableMode.DataPartitioning)
                 {
-                    UInt32 mask = 0xFE000000 >> bitOffset;
+                    uint mask = 0xFE000000 >> bitOffset;
                     priorityBreakpoint = (int)((value & mask) >> (25 - bitOffset));
                     bitOffset += 7;
                 }
             }
             // 0001 1011 0111 1100 0011 1110 1001 0110
-            UInt32 quantiserScaleMask = 0xF8000000 >> bitOffset;
+            uint quantiserScaleMask = 0xF8000000 >> bitOffset;
             quantiserScaleCode = (int)((value & quantiserScaleMask) >> (27 - bitOffset));
             bitOffset += 5;
 
@@ -87,7 +83,7 @@ namespace DVBToolsCommon.MPEG
 
             while (index < (bufferLength - 4))
             {
-                if ((read32(buffer, index) >> 8) == 1)
+                if ((Read32(buffer, index) >> 8) == 1)
                     return index - startIndex;
 
                 index++;

@@ -31,7 +31,7 @@ namespace TransportMux
 
         public override string  ToString()
         {
-            return String.Format("{0:d2}", Hours) + String.Format(":{0:d2}", Minutes) + String.Format(":{0:d2}", Seconds) + String.Format(":{0:d2}", Pictures);
+            return string.Format("{0:d2}", Hours) + string.Format(":{0:d2}", Minutes) + string.Format(":{0:d2}", Seconds) + string.Format(":{0:d2}", Pictures);
         }
     }
 }

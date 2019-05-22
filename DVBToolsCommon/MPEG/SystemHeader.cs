@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DVBToolsCommon.MPEG
 {
     // Table 2-34 – Program Stream system header
@@ -45,13 +41,13 @@ namespace DVBToolsCommon.MPEG
         {
         }
 
-        public int load(byte[] buffer, int startIndex, int bufferLength)
+        public int Load(byte[] buffer, int startIndex, int bufferLength)
         {
             int index = startIndex + 4;            
 
-            headerLength = read16(buffer, index);
+            headerLength = Read16(buffer, index);
             index += 2;
-            rateBound = (read32(buffer, index) >> 9) & 0x3FFFFF;
+            rateBound = (Read32(buffer, index) >> 9) & 0x3FFFFF;
             index += 3;
             audioBound = (ushort) (buffer[index] >> 2);
             fixedFlag = (buffer[index] & 0x02) == 0x02 ? true : false;

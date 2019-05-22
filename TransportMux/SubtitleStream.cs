@@ -497,7 +497,7 @@ namespace TransportMux
 
     internal class SubtitleItem
     {
-	    public String fileName = "";
+	    public string fileName = "";
 	    public long PresentationTime = -1;
 	    public long StartOffset = -1;
 	    public long Length = -1;
