@@ -262,3 +262,8 @@ __pycache__/
 .vs/DVBToolsForWindows/v16/Server/sqlite3/storage.ide
 .vs/DVBToolsForWindows/v16/.suo
 .vs/DVBToolsForWindows/v16/Server/sqlite3/db.lock
+
+*.FileListAbsolute.txt
+storage.ide
+db.lock
+.suo
