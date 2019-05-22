@@ -1,9 +1,0 @@
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\bin\Debug\ProgramMapDescriptors.dll
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\bin\Debug\ProgramMapDescriptors.pdb
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\bin\Debug\DVBToolsCommon.dll
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\bin\Debug\DVBToolsCommon.pdb
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\obj\Debug\ProgramMapDescriptors.csprojAssemblyReference.cache
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\obj\Debug\ProgramMapDescriptors.csproj.CoreCompileInputs.cache
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\obj\Debug\ProgramMapDescriptors.csproj.CopyComplete
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\obj\Debug\ProgramMapDescriptors.dll
-C:\Users\Darren R. Starr\Downloads\dvbtoolswindows-code-r9\dvbtoolswindows-code-r9\ProgramMapDescriptors\obj\Debug\ProgramMapDescriptors.pdb
